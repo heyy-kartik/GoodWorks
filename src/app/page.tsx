@@ -6,9 +6,7 @@ import {
   Shield,
   Users,
   ArrowRight,
-  Play,
   Star,
-  Zap,
   Eye,
   Menu,
   X,
@@ -16,7 +14,6 @@ import {
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -82,6 +79,78 @@ const TESTIMONIALS = [
     quote:
       "I recommended this to parents — kids loved donating toys. The team followed up politely and reliably.",
     avatar: "MJ",
+  },
+  {
+    name: "Arun Patel",
+    role: "Donor, Ahmedabad",
+    rating: 5,
+    quote:
+      "Easy to use, quick confirmation and helpful receipts for tax time.",
+    avatar: "AP",
+  },
+  {
+    name: "Sneha Rao",
+    role: "Volunteer, Bangalore",
+    rating: 5,
+    quote:
+      "Great platform for running local drives — saved us so much time.",
+    avatar: "SR",
+  },
+  {
+    name: "Vikram Singh",
+    role: "NGO Volunteer, Lucknow",
+    rating: 4,
+    quote:
+      "Smooth coordination with donors and clear pickup slots.",
+    avatar: "VS",
+  },
+  {
+    name: "Kavita Mehta",
+    role: "Teacher, Kolkata",
+    rating: 5,
+    quote:
+      "We used this for school supply drives — parents loved the simplicity.",
+    avatar: "KM",
+  },
+  {
+    name: "Rohit Deshmukh",
+    role: "Donor, Pune",
+    rating: 5,
+    quote:
+      "Transparent updates and receipts made me trust the platform immediately.",
+    avatar: "RD",
+  },
+  {
+    name: "Nisha Gupta",
+    role: "Donor, Jaipur",
+    rating: 4,
+    quote:
+      "Pickup scheduling worked well and the volunteers were punctual.",
+    avatar: "NG",
+  },
+  {
+    name: "Sahil Verma",
+    role: "Corporate CSR, Gurgaon",
+    rating: 5,
+    quote:
+      "Our CSR drives have become more streamlined; reporting is excellent.",
+    avatar: "SV",
+  },
+  {
+    name: "Leena Kapoor",
+    role: "Donor, Chandigarh",
+    rating: 5,
+    quote:
+      "I love the local campaigns feature — it's great to see neighborhood drives.",
+    avatar: "LK",
+  },
+  {
+    name: "Praveen Nair",
+    role: "Volunteer, Kochi",
+    rating: 5,
+    quote:
+      "The platform helped us organize disaster-relief donations quickly.",
+    avatar: "PN",
   },
 ];
 
@@ -151,29 +220,56 @@ export default function HandcraftedLandingWithGradient() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const bgRef = useRef<HTMLDivElement | null>(null);
-  const [trackWidth, setTrackWidth] = useState(0);
+
+  // carousel refs for width measuring
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const [trackWidth, setTrackWidth] = useState(0);
+
+  // duplicated array for seamless loop
   const doubled = [...TESTIMONIALS, ...TESTIMONIALS];
+
+  // speed control
   const baseSpeed = 60; // pixels per second
   const duration = trackWidth ? (trackWidth / 2) / baseSpeed : 30;
 
-  // floaty motion for decorative shapes (mouse parallax)
+  // rotate testimonial index for small card highlight (keeps earlier behavior)
   useEffect(() => {
     const id = setInterval(() => setTestimonialIndex((i) => (i + 1) % TESTIMONIALS.length), 5000);
     return () => clearInterval(id);
   }, []);
 
+  // subtle background parallax with mouse
   useEffect(() => {
     const handle = (e: MouseEvent) => {
       if (!bgRef.current) return;
       const x = (e.clientX / window.innerWidth - 0.5) * 20;
       const y = (e.clientY / window.innerHeight - 0.5) * 20;
-      // subtle transform on background container
       bgRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     };
     window.addEventListener("mousemove", handle);
     return () => window.removeEventListener("mousemove", handle);
   }, []);
+
+  // measure track width once mounted & on resize
+  useEffect(() => {
+    function measure() {
+      if (!trackRef.current) {
+        setTrackWidth(0);
+        return;
+      }
+      // scrollWidth of the whole track (contains doubled items)
+      const w = trackRef.current.scrollWidth;
+      setTrackWidth(w);
+    }
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (trackRef.current) ro.observe(trackRef.current);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [doubled.length]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white text-slate-900">
@@ -376,7 +472,9 @@ export default function HandcraftedLandingWithGradient() {
             </div>
           </Reveal>
         </section>
-<section id="stories" className="max-w-6xl mx-auto px-6 py-14">
+
+        {/* stories/testimonials */}
+        <section id="stories" className="max-w-6xl mx-auto px-6 py-14">
           <Reveal>
             <h2 className="text-2xl font-bold mb-6">Voices from our community</h2>
 
@@ -389,7 +487,7 @@ export default function HandcraftedLandingWithGradient() {
                 // animate from 0 to -halfWidth and loop
                 animate={
                   trackWidth
-                    ? { x: [-0, -(trackWidth / 2)] }
+                    ? { x: [0, -(trackWidth / 2)] }
                     : { x: 0 }
                 }
                 transition={
@@ -419,8 +517,8 @@ export default function HandcraftedLandingWithGradient() {
               </motion.div>
 
               {/* subtle left/right fading masks to soften edges */}
-              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white/100 to-white/0 opacity-90" />
-              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/100 to-white/0 opacity-90" />
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12" style={{ background: "linear-gradient(90deg, white 0%, rgba(255,255,255,0) 100%)", opacity: 0.9 }} />
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12" style={{ background: "linear-gradient(270deg, white 0%, rgba(255,255,255,0) 100%)", opacity: 0.9 }} />
             </div>
           </Reveal>
         </section>
