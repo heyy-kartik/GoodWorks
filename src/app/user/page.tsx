@@ -546,13 +546,3 @@ export default function DonorLandingPretty() {
   );
 }
 
-/* tiny KPI component defined inside to keep file self-contained */
-function KPI({ title, value, subtitle }: { title: string; value: number | string; subtitle?: string }) {
-  return (
-    <div className="p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
-      {subtitle && <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>}
-    </div>
-  );
-}

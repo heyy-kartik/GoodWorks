@@ -1,930 +1,433 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Progress } from "@/components/ui/progress";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
-import {
+  Download,
+  CheckCircle,
+  XCircle,
+  Trash,
   PlusCircle,
-  Gift,
-  CreditCard,
-  Users,
-  Bell,
   Search,
-  ArrowRight,
-  Clock,
-  FileText,
-  MapPin,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-/* ---------------- Types & Local dataset ---------------- */
+/* ---------------- Types & Mock Data ---------------- */
 
-type Status = "Created" | "Accepted" | "In Progress" | "Completed" | "Rejected";
+type DonationStatus = "Created" | "Accepted" | "In Progress" | "Completed" | "Rejected";
 
-type MyDonation = {
+type Donation = {
   id: string;
+  donorName: string;
   ngoName: string;
-  type: string;
-
+  type: "Cloth" | "Food" | "Money" | "Other";
   qty: string;
-  status: Status;
-  createdAt: string;
+  status: DonationStatus;
+  requestedAt: string;
   receiptUrl?: string | null;
-  timeline?: { status: Status; at: string; note?: string }[];
 };
 
 type Campaign = {
   id: string;
   title: string;
-  progress: number;
   location?: string;
+  progress: number; // 0-100
+  active: boolean;
 };
 
-const STORAGE_KEY = "demo_donations_v1";
-
-const MOCK_DONOR = {
-  id: "donor_101",
-  name: "Venkatesh",
-  initials: "V",
-  email: "venkatesh@example.com",
+type UserAccount = {
+  id: string;
+  name: string;
+  email: string;
+  role: "Donor" | "NGO" | "Admin" | "Volunteer";
+  active: boolean;
 };
 
-const seedDonations: MyDonation[] = [
-  {
-    id: "m1",
-    ngoName: "Seva Foundation",
-    type: "Cloth",
-    qty: "3 bags",
-    status: "Completed",
-    createdAt: "2025-09-05",
-    receiptUrl: "/receipts/m1.pdf",
-    timeline: [
-      { status: "Created", at: "2025-09-01" },
-      { status: "Accepted", at: "2025-09-02" },
-      { status: "Completed", at: "2025-09-05" },
-    ],
-  },
-  {
-    id: "m2",
-    ngoName: "CareForAll",
-    type: "Food",
-    qty: "15 meals",
-    status: "In Progress",
-    createdAt: "2025-09-12",
-    timeline: [
-      { status: "Created", at: "2025-09-12" },
-      { status: "Accepted", at: "2025-09-13" },
-      { status: "In Progress", at: "2025-09-14" },
-    ],
-  },
-  {
-    id: "m3",
-    ngoName: "HelpHands",
-    type: "Money",
-    qty: "₹500",
-    status: "Created",
-    createdAt: "2025-09-20",
-    timeline: [{ status: "Created", at: "2025-09-20" }],
-  },
+const MOCK_DONATIONS: Donation[] = [
+  { id: "d_101", donorName: "Priya Sharma", ngoName: "Seva Foundation", type: "Cloth", qty: "3 bags", status: "Created", requestedAt: "2025-09-20" },
+  { id: "d_102", donorName: "Rajan Mehra", ngoName: "Local Kitchen", type: "Food", qty: "20 meals", status: "Accepted", requestedAt: "2025-09-19", receiptUrl: "/receipts/d_102.pdf" },
+  { id: "d_103", donorName: "Vikram Singh", ngoName: "HelpHands", type: "Money", qty: "₹2000", status: "In Progress", requestedAt: "2025-09-18" },
+  { id: "d_104", donorName: "Nisha Gupta", ngoName: "Goonj", type: "Cloth", qty: "1 bag", status: "Completed", requestedAt: "2025-09-12", receiptUrl: "/receipts/d_104.pdf" },
 ];
 
-const seedCampaigns: Campaign[] = [
-  { id: "s1", title: "Winter Blanket Drive", progress: 48, location: "Pune" },
-  {
-    id: "s2",
-    title: "School Supplies Donation",
-    progress: 22,
-    location: "Pimpri-Chinchwad",
-  },
+const MOCK_CAMPAIGNS: Campaign[] = [
+  { id: "c_01", title: "Winter Blanket Drive", location: "Pune", progress: 48, active: true },
+  { id: "c_02", title: "School Supplies", location: "Mumbai", progress: 22, active: true },
+  { id: "c_03", title: "Healthcare Kits", location: "Bengaluru", progress: 78, active: false },
 ];
 
-/* ---------------- Small UI helpers ---------------- */
+const MOCK_USERS: UserAccount[] = [
+  { id: "u_1", name: "Priya Sharma", email: "priya@example.com", role: "Donor", active: true },
+  { id: "u_2", name: "Seva Foundation", email: "seva@ngo.org", role: "NGO", active: true },
+  { id: "u_3", name: "Rajan Mehra", email: "rajan@example.com", role: "Volunteer", active: true },
+  { id: "u_4", name: "Ghost User", email: "ghost@example.com", role: "Donor", active: false },
+];
 
-function StatusPill({ status }: { status: Status }) {
-  const map: Record<Status, string> = {
-    Created: "bg-yellow-100 text-yellow-800",
-    Accepted: "bg-blue-100 text-blue-800",
-    "In Progress": "bg-indigo-100 text-indigo-800",
-    Completed: "bg-green-100 text-green-800",
-    Rejected: "bg-red-100 text-red-800",
-  };
-  return (
-    <Badge className={cn("px-2 py-1 text-xs rounded-md", map[status])}>
-      {status}
-    </Badge>
-  );
-}
+/* ---------------- Small helpers ---------------- */
 
-/* ---------------- Utility: save/load localStorage ---------------- */
-
-function loadDonations(): MyDonation[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seedDonations;
-    return JSON.parse(raw);
-  } catch {
-    return seedDonations;
+function statusColor(s: DonationStatus) {
+  switch (s) {
+    case "Created":
+      return "bg-yellow-100 text-yellow-800";
+    case "Accepted":
+      return "bg-blue-100 text-blue-800";
+    case "In Progress":
+      return "bg-indigo-100 text-indigo-800";
+    case "Completed":
+      return "bg-green-100 text-green-800";
+    case "Rejected":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-slate-100 text-slate-700";
   }
 }
 
-function saveDonations(list: MyDonation[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  } catch {}
+function downloadCSV(filename: string, rows: string[][]) {
+  const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ---------------- Component ---------------- */
 
-export default function DonorLandingPretty() {
-  const [user] = useState(MOCK_DONOR);
-  const [donations, setDonations] = useState<MyDonation[]>(() => {
-    if (typeof window === "undefined") return seedDonations;
-    return loadDonations();
-  });
-  const [campaigns] = useState<Campaign[]>(seedCampaigns);
+export default function AdminDashboard(): JSX.Element {
+  // local state (mock DB)
+  const [donations, setDonations] = useState<Donation[]>(MOCK_DONATIONS);
+  const [campaigns, setCampaigns] = useState<Campaign[]>(MOCK_CAMPAIGNS);
+  const [users, setUsers] = useState<UserAccount[]>(MOCK_USERS);
 
-  // search & filter
+  // UI controls
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<
-    "All" | "Pending" | "Completed" | "Money"
-  >("All");
+  const [filterStatus, setFilterStatus] = useState<DonationStatus | "All">("All");
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
-  // modal & drawer
-  const [makeOpen, setMakeOpen] = useState(false);
-  const [detail, setDetail] = useState<MyDonation | null>(null);
-
-  // make donation form (multi-step UI simplified)
-  const [formStep, setFormStep] = useState(1);
-  const [form, setForm] = useState<{
-    type: string;
-    qty: string;
-    ngo: string;
-    notes?: string;
-  }>({ type: "Cloth", qty: "", ngo: "Seva Foundation", notes: "" });
-
-  // computed stats
-  const totalDonations = donations.length;
-  const completedCount = donations.filter(
-    (d) => d.status === "Completed"
-  ).length;
-  const itemsDonated = donations.filter((d) => d.type !== "Money").length;
-  const moneyDonated = donations
-    .filter((d) => d.type === "Money")
-    .reduce((s, d) => {
-      // parse rupee amounts if present like "₹500"
-      const n = Number((d.qty || "").replace(/[₹, ]/g, "")) || 0;
-      return s + n;
-    }, 0);
-
-  // Persist donations whenever changed
-  useEffect(() => {
-    saveDonations(donations);
+  // derived counts
+  const stats = useMemo(() => {
+    const total = donations.length;
+    const pending = donations.filter(d => d.status === "Created").length;
+    const completed = donations.filter(d => d.status === "Completed").length;
+    const ngos = new Set(donations.map(d => d.ngoName)).size;
+    return { total, pending, completed, ngos };
   }, [donations]);
 
-  // Demo life-cycle: when a new donation with status Created is added, auto-advance it:
-  useEffect(() => {
-    // find items that are Created and have no auto timers set
-    const created = donations.filter((d) => d.status === "Created");
-    created.forEach((d, idx) => {
-      // schedule advance only once per item (we'll attach a temporary timeline note on advance so it won't double-run)
-      const alreadyScheduled =
-        d.timeline && d.timeline.some((t) => t.note === "auto-scheduled");
-      if (!alreadyScheduled) {
-        // mark timeline with a placeholder so we know it's scheduled
-        setDonations((prev) =>
-          prev.map((p) =>
-            p.id === d.id
-              ? {
-                  ...p,
-                  timeline: [
-                    ...(p.timeline || []),
-                    {
-                      status: d.status,
-                      at: p.createdAt,
-                      note: "auto-scheduled",
-                    },
-                  ],
-                }
-              : p
-          )
-        );
-        // Advance flow: Accepted after 4s, In Progress after 6s, Completed after 10s
-        setTimeout(
-          () => advanceStatusLocal(d.id, "Accepted", "NGO accepted donation"),
-          4000 + idx * 1000
-        );
-        setTimeout(
-          () => advanceStatusLocal(d.id, "In Progress", "Pickup started"),
-          7000 + idx * 1000
-        );
-        setTimeout(
-          () =>
-            advanceStatusLocal(
-              d.id,
-              "Completed",
-              "Donation received & processed"
-            ),
-          11000 + idx * 1000
-        );
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [donations]);
-
-  function advanceStatusLocal(id: string, to: Status, note?: string) {
-    setDonations((prev) =>
-      prev.map((d) => {
-        if (d.id !== id) return d;
-        const now = new Date().toISOString().slice(0, 10);
-        const newTimeline = [
-          ...(d.timeline || []),
-          { status: to, at: now, note },
-        ];
-        const receiptUrl =
-          to === "Completed" ? `/receipts/${id}.pdf` : d.receiptUrl;
-        return { ...d, status: to, timeline: newTimeline, receiptUrl };
-      })
-    );
-  }
-
-  function quickCreate(type: string) {
-    const newDonation: MyDonation = {
-      id: `local_${Date.now()}`,
-      ngoName: form.ngo,
-      type,
-      qty: type === "Money" ? "₹500" : type === "Cloth" ? "2 bags" : "5 meals",
-      status: "Created",
-      createdAt: new Date().toISOString().slice(0, 10),
-      timeline: [
-        { status: "Created", at: new Date().toISOString().slice(0, 10) },
-      ],
-    };
-    setDonations((p) => [newDonation, ...p]);
-    // small accessible feedback
-    setTimeout(
-      () =>
-        window?.alert?.(
-          "Donation created — demo mode (local). NGO will review soon."
-        ),
-      200
-    );
-  }
-
-  function openMakeFor(type?: string) {
-    if (type) setForm((f) => ({ ...f, type }));
-    setFormStep(1);
-    setMakeOpen(true);
-  }
-
-  function submitMakeForm() {
-    // basic validation
-    if (!form.qty.trim()) {
-      window.alert("Enter quantity or amount");
-      return;
+  // filtered donations
+  const filtered = useMemo(() => {
+    let list = donations.slice();
+    if (filterStatus !== "All") list = list.filter(d => d.status === filterStatus);
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      list = list.filter(d => (`${d.donorName} ${d.ngoName} ${d.type} ${d.qty}`).toLowerCase().includes(q));
     }
-    const newDonation: MyDonation = {
-      id: `local_${Date.now()}`,
-      ngoName: form.ngo,
-      type: form.type,
-      qty: form.qty,
-      status: "Created",
-      createdAt: new Date().toISOString().slice(0, 10),
-      timeline: [
-        { status: "Created", at: new Date().toISOString().slice(0, 10) },
-      ],
-    };
-    setDonations((p) => [newDonation, ...p]);
-    setMakeOpen(false);
-    setForm({ type: "Cloth", qty: "", ngo: "Seva Foundation", notes: "" });
-    setTimeout(() => window?.alert?.("Donation created — demo (local)."), 200);
+    return list;
+  }, [donations, filterStatus, query]);
+
+  // pagination slice
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page]);
+
+  /* ---------------- Actions (local) ---------------- */
+  function approveDonation(id: string) {
+    setDonations(prev => prev.map(d => (d.id === id ? { ...d, status: "Accepted" } : d)));
+  }
+  function rejectDonation(id: string) {
+    if (!confirm("Reject this donation request?")) return;
+    setDonations(prev => prev.map(d => (d.id === id ? { ...d, status: "Rejected" } : d)));
+  }
+  function markCompleted(id: string) {
+    setDonations(prev => prev.map(d => (d.id === id ? { ...d, status: "Completed", receiptUrl: `/receipts/${id}.pdf` } : d)));
+  }
+  function deleteDonation(id: string) {
+    if (!confirm("Delete donation permanently?")) return;
+    setDonations(prev => prev.filter(d => d.id !== id));
   }
 
-  function filteredList() {
-    const q = query.trim().toLowerCase();
-    return donations.filter((d) => {
-      if (filter === "Completed" && d.status !== "Completed") return false;
-      if (filter === "Pending" && d.status === "Completed") return false;
-      if (filter === "Money" && d.type !== "Money") return false;
-      if (!q) return true;
-      return (d.ngoName + " " + d.type + " " + d.qty).toLowerCase().includes(q);
-    });
+  function toggleCampaignActive(id: string) {
+    setCampaigns(prev => prev.map(c => (c.id === id ? { ...c, active: !c.active } : c)));
+  }
+  function updateCampaignProgress(id: string, amount: number) {
+    setCampaigns(prev => prev.map(c => (c.id === id ? { ...c, progress: Math.max(0, Math.min(100, c.progress + amount)) } : c)));
+  }
+  function createCampaign() {
+    const id = `c_${Date.now()}`;
+    setCampaigns(prev => [{ id, title: "New Campaign", location: "Unknown", progress: 0, active: true }, ...prev]);
+  }
+  function removeCampaign(id: string) {
+    if (!confirm("Remove this campaign?")) return;
+    setCampaigns(prev => prev.filter(c => c.id !== id));
   }
 
-  // pretty small components inside
-  const KPI = ({
-    title,
-    value,
-    subtitle,
-  }: {
-    title: string;
-    value: string | number;
-    subtitle?: string;
-  }) => (
-    <div className="bg-gradient-to-br from-white/60 to-white/40 dark:from-slate-800/60 dark:to-slate-800/30 p-4 rounded-lg shadow-sm hover:shadow-md transition">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
-      {subtitle && (
-        <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>
-      )}
-    </div>
-  );
-
-  // details drawer
-  function DonationDetailDrawer({
-    donation,
-    onClose,
-  }: {
-    donation: MyDonation | null;
-    onClose: () => void;
-  }) {
-    if (!donation) return null;
-    return (
-      <div className="fixed inset-0 z-50 flex">
-        <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-        <div className="ml-auto w-full sm:w-[520px] bg-white dark:bg-slate-900 h-full shadow-xl p-4 overflow-auto">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">
-                {donation.type} • {donation.qty}
-              </h3>
-              <div className="text-sm text-muted-foreground">
-                To {donation.ngoName} • {donation.createdAt}
-              </div>
-            </div>
-            <div>
-              <StatusPill status={donation.status} />
-            </div>
-          </div>
-
-          <Separator className="my-4" />
-
-          <div className="space-y-3">
-            <div>
-              <div className="text-sm font-medium">Timeline</div>
-              <div className="mt-2 space-y-2">
-                {(donation.timeline || [])
-                  .slice()
-                  .reverse()
-                  .map((t, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className="text-xs text-muted-foreground w-24">
-                        {t.at}
-                      </div>
-                      <div>
-                        <div className="font-semibold">{t.status}</div>
-                        {t.note && (
-                          <div className="text-sm text-muted-foreground">
-                            {t.note}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              {(donation.status === "Created" ||
-                donation.status === "Accepted") && (
-                <Button
-                  onClick={() => {
-                    advanceStatusLocal(
-                      donation.id,
-                      "In Progress",
-                      "Pickup scheduled (demo)"
-                    );
-                  }}
-                >
-                  <MapPin className="w-4 h-4 mr-1" /> Schedule Pickup
-                </Button>
-              )}
-
-              {donation.status === "Completed" && donation.receiptUrl && (
-                <a href={donation.receiptUrl} className="inline-flex">
-                  <Button variant="outline">
-                    <FileText className="w-4 h-4 mr-1" /> Download Receipt
-                  </Button>
-                </a>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <Button variant="ghost" onClick={onClose}>
-              Close
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+  function toggleUserActive(id: string) {
+    setUsers(prev => prev.map(u => (u.id === id ? { ...u, active: !u.active } : u)));
+  }
+  function removeUser(id: string) {
+    if (!confirm("Remove user account?")) return;
+    setUsers(prev => prev.filter(u => u.id !== id));
   }
 
-  /* ---------------- Render ---------------- */
+  function exportDonationsCSV() {
+    const rows = [
+      ["id", "donorName", "ngoName", "type", "qty", "status", "requestedAt", "receiptUrl"],
+      ...donations.map(d => [d.id, d.donorName, d.ngoName, d.type, d.qty, d.status, d.requestedAt, d.receiptUrl || ""]),
+    ];
+    downloadCSV(`donations_export_${Date.now()}.csv`, rows);
+  }
+
+  /* ---------------- small UI helpers ---------------- */
+  function StatusBadge({ status }: { status: DonationStatus }) {
+    return <span className={`px-2 py-1 rounded text-xs ${statusColor(status)}`}>{status}</span>;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-4">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-4 rounded-lg shadow-md">
-          <div className="flex items-center gap-4">
-            <Avatar>
-              <AvatarFallback className="bg-white text-indigo-600">
-                {user.initials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="text-lg font-semibold">Namaste, {user.name}</div>
-              <div className="text-sm opacity-90">Your impact at a glance</div>
-            </div>
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            <p className="text-sm text-slate-600">Overview & management — mock data (no API).</p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-white/10 px-3 py-2 rounded-full gap-2">
-              <Search className="w-4 h-4 opacity-90" />
-              <Input
-                placeholder="Search donations or NGOs"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="bg-transparent border-0 p-0 focus:outline-none"
-              />
-            </div>
+            <Input placeholder="Search donations, NGO or donor..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+            <Select onValueChange={(v) => { setFilterStatus(v as DonationStatus | "All"); setPage(1); }} defaultValue="All">
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All statuses</SelectItem>
+                <SelectItem value="Created">Created</SelectItem>
+                <SelectItem value="Accepted">Accepted</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <button
-              aria-label="notifications"
-              className="relative inline-flex items-center justify-center p-2 bg-white/10 rounded-full"
-            >
-              <Bell className="w-5 h-5" />
-              {/* small unread dot for demo */}
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-400 rounded-full" />
-            </button>
+            <Button onClick={exportDonationsCSV} variant="outline" className="flex items-center gap-2">
+              <Download className="w-4 h-4" /> Export CSV
+            </Button>
           </div>
         </div>
 
-        {/* KPI row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KPI
-            title="Total Donations"
-            value={totalDonations}
-            subtitle={`${moneyDonated ? `₹${moneyDonated}` : ""}`}
-          />
-          <KPI title="Completed" value={completedCount} />
-          <KPI title="Items Donated" value={itemsDonated} />
-          <KPI
-            title="Next Pickup"
-            value={"None"}
-            subtitle={"Schedule pickup"}
-          />
+        {/* top stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Total donations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold">{stats.total}</div>
+              <div className="text-sm text-slate-500 mt-1">{stats.ngos} NGOs receiving donations</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Pending</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold">{stats.pending}</div>
+              <div className="text-sm text-slate-500 mt-1">Requests awaiting admin/NGO action</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Completed receipts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold">{stats.completed}</div>
+              <div className="text-sm text-slate-500 mt-1">Donations finished with receipts</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Active campaigns</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold">{campaigns.filter(c => c.active).length}</div>
+              <div className="text-sm text-slate-500 mt-1">Ongoing drives</div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* CTA tiles */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => openMakeFor("Cloth")}
-            className="p-4 rounded-lg bg-white shadow hover:scale-[1.01] transition transform flex items-center gap-3"
-          >
-            <Gift className="w-6 h-6 text-indigo-600" />
-            <div className="text-sm text-left">
-              <div className="font-medium">Donate Items</div>
-              <div className="text-xs text-muted-foreground">
-                Cloth / Food / Household
-              </div>
-            </div>
-            <div className="ml-auto text-indigo-600">
-              <ArrowRight className="w-4 h-4" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => openMakeFor("Money")}
-            className="p-4 rounded-lg bg-white shadow hover:scale-[1.01] transition transform flex items-center gap-3"
-          >
-            <CreditCard className="w-6 h-6 text-amber-600" />
-            <div className="text-sm text-left">
-              <div className="font-medium">Donate Money</div>
-              <div className="text-xs text-muted-foreground">Fast & secure</div>
-            </div>
-            <div className="ml-auto text-amber-600">
-              <ArrowRight className="w-4 h-4" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => openMakeFor("Food")}
-            className="p-4 rounded-lg bg-white shadow hover:scale-[1.01] transition transform flex items-center gap-3"
-          >
-            <Users className="w-6 h-6 text-emerald-600" />
-            <div className="text-sm text-left">
-              <div className="font-medium">Join Campaign</div>
-              <div className="text-xs text-muted-foreground">Local drives</div>
-            </div>
-            <div className="ml-auto text-emerald-600">
-              <ArrowRight className="w-4 h-4" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => openMakeFor("Other")}
-            className="p-4 rounded-lg bg-white shadow hover:scale-[1.01] transition transform flex items-center gap-3"
-          >
-            <PlusCircle className="w-6 h-6 text-slate-700" />
-            <div className="text-sm text-left">
-              <div className="font-medium">Other</div>
-              <div className="text-xs text-muted-foreground">
-                Toys, books, supplies
-              </div>
-            </div>
-            <div className="ml-auto text-slate-700">
-              <ArrowRight className="w-4 h-4" />
-            </div>
-          </button>
-        </div>
-
-        {/* Recent donations > filters */}
-        <div className="grid lg:grid-cols-3 gap-4">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left: donations list */}
           <div className="lg:col-span-2 space-y-4">
             <Card>
               <CardHeader className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Recent Donations</CardTitle>
-                  <CardDescription>
-                    Latest activity — tap to view details
-                  </CardDescription>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant={filter === "All" ? undefined : "ghost"}
-                    onClick={() => setFilter("All")}
-                  >
-                    All
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filter === "Pending" ? undefined : "ghost"}
-                    onClick={() => setFilter("Pending")}
-                  >
-                    Pending
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filter === "Completed" ? undefined : "ghost"}
-                    onClick={() => setFilter("Completed")}
-                  >
-                    Completed
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filter === "Money" ? undefined : "ghost"}
-                    onClick={() => setFilter("Money")}
-                  >
-                    Money
-                  </Button>
-                </div>
+                <CardTitle>Donations</CardTitle>
+                <div className="text-sm text-slate-500">{filtered.length} results</div>
               </CardHeader>
+
               <CardContent>
-                <ScrollArea className="h-[360px]">
+                <ScrollArea className="h-[420px]">
                   <div className="space-y-3">
-                    {filteredList().map((d) => (
-                      <div
-                        key={d.id}
-                        role="button"
-                        onClick={() => setDetail(d)}
-                        className="p-3 bg-white rounded-lg shadow-sm flex items-center justify-between hover:shadow-md transition cursor-pointer"
-                      >
-                        <div>
-                          <div className="font-semibold">
-                            {d.type} • {d.qty}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            To {d.ngoName} • {d.createdAt}
+                    {paged.map(d => (
+                      <div key={d.id} className="p-3 bg-white rounded-lg border flex items-start justify-between">
+                        <div className="flex items-start gap-3">
+                          <Avatar>
+                            <AvatarFallback>{d.donorName.split(" ").map(n=>n[0]).slice(0,2).join("")}</AvatarFallback>
+                          </Avatar>
+
+                          <div>
+                            <div className="font-semibold">{d.donorName} <span className="text-xs text-slate-500">→ {d.ngoName}</span></div>
+                            <div className="text-sm text-slate-500">{d.type} • {d.qty} • {d.requestedAt}</div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right text-xs text-muted-foreground">
-                            {d.status === "Completed" && d.receiptUrl ? (
-                              <div>Receipt ready</div>
-                            ) : (
-                              <div>{d.timeline?.slice(-1)[0]?.at ?? ""}</div>
+
+                        <div className="flex flex-col items-end gap-2">
+                          <StatusBadge status={d.status} />
+                          <div className="flex gap-2">
+                            {d.status === "Created" && (
+                              <>
+                                <Button size="sm" onClick={() => approveDonation(d.id)} className="flex items-center gap-2">
+                                  <CheckCircle className="w-4 h-4" /> Approve
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => rejectDonation(d.id)} className="flex items-center gap-2">
+                                  <XCircle className="w-4 h-4" /> Reject
+                                </Button>
+                              </>
                             )}
+
+                            {d.status !== "Completed" && d.status !== "Rejected" && (
+                              <Button size="sm" variant="outline" onClick={() => markCompleted(d.id)}>Mark Completed</Button>
+                            )}
+
+                            <Button size="sm" variant="destructive" onClick={() => deleteDonation(d.id)}><Trash className="w-4 h-4" /></Button>
                           </div>
-                          <StatusPill status={d.status} />
+
+                          {d.receiptUrl && (
+                            <a href={d.receiptUrl} className="text-xs text-indigo-600" target="_blank" rel="noreferrer">View receipt</a>
+                          )}
                         </div>
                       </div>
                     ))}
 
-                    {filteredList().length === 0 && (
-                      <div className="text-center py-12 text-sm text-muted-foreground">
-                        No donations match this filter. Try another filter or
-                        make a donation.
-                      </div>
-                    )}
+                    {filtered.length === 0 && <div className="text-sm text-slate-500 p-4">No donations match your filters.</div>}
                   </div>
                 </ScrollArea>
+
+                {/* pagination */}
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-slate-500">Page {page} of {Math.max(1, Math.ceil(filtered.length / pageSize))}</div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => setPage(p => Math.max(1, p-1))}><ChevronLeft /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => setPage(p => p + 1)}><ChevronRight /></Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
+          </div>
 
-            {/* Campaigns small list */}
+          {/* Right: campaigns & user mgmt */}
+          <aside className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Suggested Campaigns</CardTitle>
-                <CardDescription>Nearby drives</CardDescription>
+              <CardHeader className="flex items-center justify-between">
+                <CardTitle>Campaigns</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={createCampaign} className="flex items-center gap-2"><PlusCircle className="w-4 h-4" /> New</Button>
+                </div>
               </CardHeader>
+
               <CardContent>
                 <div className="space-y-3">
-                  {campaigns.map((c) => (
-                    <div
-                      key={c.id}
-                      className="p-3 bg-white rounded-md flex items-center justify-between"
-                    >
-                      <div>
-                        <div className="font-semibold">{c.title}</div>
-                        {c.location && (
-                          <div className="text-xs text-muted-foreground">
-                            {c.location}
-                          </div>
-                        )}
-                      </div>
-                      <div className="w-36">
-                        <Progress value={c.progress} />
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {c.progress}%
+                  {campaigns.map(c => (
+                    <div key={c.id} className="p-3 bg-white rounded border">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold">{c.title}</div>
+                          <div className="text-xs text-slate-500">{c.location}</div>
                         </div>
+
+                        <div className="text-right">
+                          <div className="text-sm font-semibold">{c.progress}%</div>
+                          <div className="text-xs text-slate-500">{c.active ? "Active" : "Paused"}</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2">
+                        <Progress value={c.progress} className="h-2 flex-1" />
+                        <Button size="sm" onClick={() => updateCampaignProgress(c.id, 10)}>+10</Button>
+                        <Button size="sm" onClick={() => updateCampaignProgress(c.id, -10)}>-10</Button>
+                        <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id)}>{c.active ? "Pause" : "Start"}</Button>
+                        <Button size="sm" variant="destructive" onClick={() => removeCampaign(c.id)}><Trash /></Button>
                       </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right column: impact + quick links */}
-          <aside className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Impact Summary</CardTitle>
-                <CardDescription>Snapshot of your giving</CardDescription>
+                <CardTitle>Users</CardTitle>
               </CardHeader>
+
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      Total donations
-                    </div>
-                    <div className="font-semibold">{totalDonations}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      Items donated
-                    </div>
-                    <div className="font-semibold">{itemsDonated}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      Money donated
-                    </div>
-                    <div className="font-semibold">₹{moneyDonated}</div>
-                  </div>
+                <div className="space-y-2">
+                  {users.map(u => (
+                    <div key={u.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback>{u.name.split(" ").map(n=>n[0]).slice(0,2).join("")}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold">{u.name}</div>
+                          <div className="text-xs text-slate-500">{u.email} • {u.role}</div>
+                        </div>
+                      </div>
 
-                  <Separator />
-
-                  <div className="text-sm text-muted-foreground">
-                    Recent pickup
-                  </div>
-                  <div className="mt-2 text-sm">
-                    No pickups scheduled —{" "}
-                    <button
-                      className="text-indigo-600 underline"
-                      onClick={() => openMakeFor("Cloth")}
-                    >
-                      Schedule one
-                    </button>
-                  </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={`${u.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} px-2 py-1`}>{u.active ? "Active" : "Inactive"}</Badge>
+                        <Button size="sm" variant="outline" onClick={() => toggleUserActive(u.id)}>{u.active ? "Disable" : "Enable"}</Button>
+                        <Button size="sm" variant="destructive" onClick={() => removeUser(u.id)}><Trash /></Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
 
             <Card>
+              
               <CardHeader>
-                <CardTitle>Quick Links</CardTitle>
+                <CardTitle>Quick actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="ghost" className="w-full">
-                  View Receipts
-                </Button>
-                <Button variant="ghost" className="w-full">
-                  Saved Drafts
-                </Button>
-                <Button variant="ghost" className="w-full">
-                  Help & FAQ
-                </Button>
+              <CardContent className="flex flex-col gap-2">
+                <Button onClick={exportDonationsCSV} variant="outline" className="flex items-center gap-2"><Download /> Export donations</Button>
+                <Button onClick={() => alert("Pretend sending an admin announcement...")} variant="ghost">Send announcement</Button>
+                <Button onClick={() => { setDonations(MOCK_DONATIONS); setCampaigns(MOCK_CAMPAIGNS); setUsers(MOCK_USERS); }} variant="link">Reset mock data</Button>
               </CardContent>
             </Card>
           </aside>
         </div>
 
-        {/* FAB */}
-        <div className="fixed bottom-6 right-6 z-50">
-          <button
-            aria-label="Create donation"
-            onClick={() => openMakeFor()}
-            className="bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:scale-105 transition transform"
-          >
-            <PlusCircle className="w-6 h-6" />
-          </button>
-        </div>
+        <Separator />
 
-        {/* Footer */}
-        <div className="text-center text-xs text-muted-foreground pb-8">
-          © {new Date().getFullYear()} GoodWorks — Demo mode
+        {/* footer / notes */}
+        <div className="text-xs text-slate-500 mt-4">
+          <div>Tip: This is a mock admin UI. Hook actions to real API calls and replace mock arrays when integrating.</div>
         </div>
       </div>
-
-      {/* Make Donation Modal (Dialog) */}
-      <Dialog open={makeOpen} onOpenChange={setMakeOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Make a donation</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {formStep === 1 && (
-              <div>
-                <div className="text-sm text-muted-foreground">
-                  What would you like to donate?
-                </div>
-                <div className="grid grid-cols-2 gap-2 mt-3">
-                  <button
-                    onClick={() => setForm((f) => ({ ...f, type: "Cloth" }))}
-                    className={`p-3 rounded ${
-                      form.type === "Cloth"
-                        ? "bg-indigo-50 border border-indigo-200"
-                        : "bg-white"
-                    }`}
-                  >
-                    Cloth
-                  </button>
-                  <button
-                    onClick={() => setForm((f) => ({ ...f, type: "Food" }))}
-                    className={`p-3 rounded ${
-                      form.type === "Food"
-                        ? "bg-indigo-50 border border-indigo-200"
-                        : "bg-white"
-                    }`}
-                  >
-                    Food
-                  </button>
-                  <button
-                    onClick={() => setForm((f) => ({ ...f, type: "Money" }))}
-                    className={`p-3 rounded ${
-                      form.type === "Money"
-                        ? "bg-indigo-50 border border-indigo-200"
-                        : "bg-white"
-                    }`}
-                  >
-                    Money
-                  </button>
-                  <button
-                    onClick={() => setForm((f) => ({ ...f, type: "Other" }))}
-                    className={`p-3 rounded ${
-                      form.type === "Other"
-                        ? "bg-indigo-50 border border-indigo-200"
-                        : "bg-white"
-                    }`}
-                  >
-                    Other
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {formStep === 2 && (
-              <div>
-                <div className="text-sm text-muted-foreground">Details</div>
-                <Input
-                  placeholder="Quantity or amount (e.g. 2 bags, ₹500)"
-                  value={form.qty}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, qty: e.target.value }))
-                  }
-                  className="mt-2"
-                />
-                <Input
-                  placeholder="NGO (e.g. Seva Foundation)"
-                  value={form.ngo}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, ngo: e.target.value }))
-                  }
-                  className="mt-2"
-                />
-                <Textarea
-                  placeholder="Notes (pickup preference)"
-                  value={form.notes}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, notes: e.target.value }))
-                  }
-                  className="mt-2"
-                />
-              </div>
-            )}
-
-            {formStep === 3 && (
-              <div>
-                <div className="text-sm text-muted-foreground">Review</div>
-                <div className="p-3 bg-white rounded mt-2">
-                  <div className="font-semibold">
-                    {form.type} • {form.qty || "—"}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    NGO: {form.ngo}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Notes: {form.notes || "-"}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <div className="flex w-full justify-between">
-              <div>
-                {formStep > 1 && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => setFormStep((s) => s - 1)}
-                  >
-                    Back
-                  </Button>
-                )}
-              </div>
-              <div className="flex gap-2">
-                {formStep < 3 && (
-                  <Button onClick={() => setFormStep((s) => s + 1)}>
-                    Next
-                  </Button>
-                )}
-                {formStep === 3 && (
-                  <Button onClick={submitMakeForm}>Submit donation</Button>
-                )}
-              </div>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Detail drawer */}
-      <DonationDetailDrawer donation={detail} onClose={() => setDetail(null)} />
-    </div>
-  );
-}
-
-/* tiny KPI component defined inside to keep file self-contained */
-function KPI({
-  title,
-  value,
-  subtitle,
-}: {
-  title: string;
-  value: number | string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
-      {subtitle && (
-        <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>
-      )}
     </div>
   );
 }
