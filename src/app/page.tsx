@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { JSX, useEffect, useRef, useState } from "react";
 import {
   Heart,
   Shield,
@@ -10,8 +10,6 @@ import {
   Eye,
   Sun,
   Moon,
-  Menu,
-  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -29,6 +27,7 @@ import {
   MobileNavToggle,
   NavbarButton,
 } from "@/components/ui/resizable-navbar";
+import Image from "next/image";
 
 /**
  * Polished HandcraftedLandingWithGradient.tsx
@@ -264,7 +263,7 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
         {/* Hero with uploaded image (put booom.jpg in /public) */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="relative rounded-2xl overflow-hidden border shadow-sm">
-            <img src="/poor-img.jpg" alt="Child receiving a donation" className="w-full h-[360px] object-cover object-center brightness-[0.65] dark:brightness-[0.5]" />
+            <Image src="/poor-img.jpg" alt="Child receiving a donation" className="w-full h-[360px] object-cover object-center brightness-[0.65] dark:brightness-[0.5]" />
             <div className="absolute inset-0 flex items-center">
               <div className="max-w-4xl mx-auto px-6 text-white">
                 <h1 className="text-3xl md:text-5xl font-extrabold leading-tight drop-shadow-lg">Being a life-saver for someone</h1>
@@ -354,7 +353,7 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
         <section id="features" className="max-w-6xl mx-auto px-6 py-14">
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-2">What you get</h2>
-            <p className="text-slate-600">We designed GoodWorks to avoid jargon. These are the practical things you'll actually use.</p>
+            <p className="text-slate-600">We designed GoodWorks to avoid jargon. These are the practical things you&apos;ll actually use.</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
