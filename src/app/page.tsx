@@ -1,4 +1,5 @@
 "use client";
+import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs"
 
 import React, { JSX, useEffect, useRef, useState } from "react";
 import {
@@ -165,7 +166,6 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
   const baseSpeed = 60;
   const halfWidth = trackWidth ? trackWidth / 2 : 0;
   const duration = halfWidth ? Math.max(10, halfWidth / baseSpeed) : 30;
-
   const [paused, setPaused] = useState(false);
 
   // parallax
@@ -198,9 +198,8 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
       window.removeEventListener("resize", measure);
     };
   }, [doubled.length]);
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white text-slate-900">
+   <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white text-slate-900">
       {/* theme toggle in top-right */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
@@ -214,26 +213,65 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
         <div className="absolute left-8 bottom-[-10%] w-80 h-80 rounded-full bg-gradient-to-br from-yellow-200/30 to-orange-200/10 blur-3xl opacity-65" />
       </div>
 
-      {/* Navbar */}
+      {/* ---------- Fixed, responsive Navbar (Clerk-ready) ---------- */}
       <Navbar className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 w-[min(98%,1200px)]">
-        <NavBody className="bg-white/80 backdrop-blur-md rounded-xl shadow-sm border border-slate-200/60 px-4 py-3">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg border border-slate-200 grid place-items-center font-semibold text-indigo-700 bg-white shadow-sm">GW</div>
+        <NavBody className="flex items-center justify-between gap-4 bg-white/80 backdrop-blur-md rounded-xl shadow-sm border border-slate-200/60 px-4 py-3">
+          {/* Left: logo */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg border border-slate-200 grid place-items-center font-semibold text-indigo-700 bg-white shadow-sm">
+              GW
+            </div>
             <div className="hidden sm:block">
               <div className="font-semibold text-slate-900">GoodWorks</div>
               <div className="text-xs text-slate-500">Trusted donations — locally.</div>
             </div>
           </div>
 
-          <NavItems items={navItems} className="mx-6" />
+          {/* Center: nav links (hidden on small screens) */}
+          <div className="hidden md:flex items-center gap-6">
+            <NavItems items={navItems} className="flex items-center gap-6 text-sm text-slate-700" />
+          </div>
 
+          {/* Right: actions */}
           <div className="flex items-center gap-3">
-            <NavbarButton onClick={() => (window.location.href = "/user")} variant="primary">Open Dashboard</NavbarButton>
+            {/* Desktop actions */}
+            <div className="hidden md:flex items-center gap-3">
+              {/* If user is signed out show Sign in, signed in show UserButton + Sign Out option in the user menu */}
+              <SignedOut>
+              <SignInButton afterSignInUrl="/dashboard">
+                <Button className="px-4 py-2">Sign in</Button>
+              </SignInButton>
+            </SignedOut>
 
-            {/* mobile toggle moved into MobileNav component below */}
+              <SignedIn>
+                <NavbarButton onClick={() => (window.location.href = "/dashboard")} variant="primary" className="px-4 py-2">
+                  Open Dashboard
+                </NavbarButton>
+
+                <div className="ml-1">
+                  <ClerkLoaded>
+                    <UserButton afterSignOutUrl="/" />
+                  </ClerkLoaded>
+                  <ClerkLoading>
+                    <div className="w-9 h-9 rounded-full bg-slate-100" />
+                  </ClerkLoading>
+                </div>
+              </SignedIn>
+            </div>
+
+            {/* Mobile menu toggle (visible on mobile) */}
+            <div className="md:hidden">
+              <MobileNavToggle
+                isOpen={isMobileNavOpen}
+                onClick={() => setIsMobileNavOpen((s) => !s)}
+                aria-label={isMobileNavOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isMobileNavOpen}
+              />
+            </div>
           </div>
         </NavBody>
 
+        {/* Mobile navigation area */}
         <MobileNav>
           <MobileNavHeader>
             <div className="flex items-center gap-3">
@@ -244,16 +282,50 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
               </div>
             </div>
 
-            <MobileNavToggle isOpen={isMobileNavOpen} onClick={() => setIsMobileNavOpen(s => !s)} />
+            {/* Toggle */}
+            <MobileNavToggle isOpen={isMobileNavOpen} onClick={() => setIsMobileNavOpen((s) => !s)} />
           </MobileNavHeader>
 
           <MobileNavMenu isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)}>
-            {navItems.map((item, idx) => (
-              <a key={idx} href={item.link} className="block py-2 text-slate-700 hover:text-indigo-600 transition-colors" onClick={() => setIsMobileNavOpen(false)}>{item.name}</a>
-            ))}
+            <div className="py-2">
+              {navItems.map((item, idx) => (
+                <a key={idx} href={item.link} className="block py-2 text-slate-700 hover:text-indigo-600 transition-colors" onClick={() => setIsMobileNavOpen(false)}>
+                  {item.name}
+                </a>
+              ))}
+            </div>
 
-            <div className="pt-4 border-t border-slate-200 mt-3">
-              <NavbarButton onClick={() => { setIsMobileNavOpen(false); window.location.href = "/dashboard"; }} variant="primary" className="w-full">Open Dashboard</NavbarButton>
+            <div className="pt-4 border-t border-slate-200 mt-3 space-y-3">
+              {/* SignedOut: show sign in CTA, SignedIn: show dashboard + avatar */}
+              <SignedOut>
+                <div className="flex gap-2">
+                  <SignInButton mode="modal">
+                    <Button className="w-full">Sign in</Button>
+                  </SignInButton>
+                </div>
+              </SignedOut>
+
+              <SignedIn>
+                <NavbarButton
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    window.location.href = "/dashboard";
+                  }}
+                  variant="primary"
+                  className="w-full"
+                >
+                  Open Dashboard
+                </NavbarButton>
+
+                <div className="flex items-center gap-2">
+                  <ClerkLoaded>
+                    <UserButton afterSignOutUrl="/" />
+                  </ClerkLoaded>
+                  <ClerkLoading>
+                    <div className="w-9 h-9 rounded-full bg-slate-100" />
+                  </ClerkLoading>
+                </div>
+              </SignedIn>
             </div>
           </MobileNavMenu>
         </MobileNav>
@@ -263,7 +335,13 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
         {/* Hero with uploaded image (put booom.jpg in /public) */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="relative rounded-2xl overflow-hidden border shadow-sm">
-            <Image src="/poor-img.jpg" alt="Child receiving a donation" className="w-full h-[360px] object-cover object-center brightness-[0.65] dark:brightness-[0.5]" />
+            <Image
+              src="/poor-img.jpg"
+              alt="Child receiving a donation"
+              width={1920}   // apna size daalo
+              height={360}
+              className="w-full h-[360px] object-cover object-center brightness-[0.65] dark:brightness-[0.5]"
+            />
             <div className="absolute inset-0 flex items-center">
               <div className="max-w-4xl mx-auto px-6 text-white">
                 <h1 className="text-3xl md:text-5xl font-extrabold leading-tight drop-shadow-lg">Being a life-saver for someone</h1>
