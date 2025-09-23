@@ -408,6 +408,7 @@ export default function AdminDashboard(): JSX.Element {
             </Card>
 
             <Card>
+              
               <CardHeader>
                 <CardTitle>Quick actions</CardTitle>
               </CardHeader>
