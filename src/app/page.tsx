@@ -1,6 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import {
+  ClerkLoaded,
+  ClerkLoading,
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/nextjs";
+import React, { JSX, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Heart,
   Shield,
@@ -28,17 +37,14 @@ import {
   MobileNavToggle,
   NavbarButton,
 } from "@/components/ui/resizable-navbar";
+
 /**
- * HandcraftedLandingWithGradient.tsx
- 
-=======
  * Polished HandcraftedLandingWithGradient.tsx
->>>>>>> f9382482c1fbb0f1480f379b37875292aa716405
  *
  * Drop this in place of your current landing component.
  *
  * Notes:
- * - Put the hero image at `/public/poor-img.jpg`.
+ * - Put the hero image at `/public/booom.jpg`.
  * - Ensure `ThemeProvider` (next-themes) is configured in your app root.
  */
 
@@ -236,7 +242,7 @@ function ThemeToggle() {
 }
 
 /* ---------------- main ---------------- */
-export default function HandcraftedLandingWithGradient() {
+export default function HandcraftedLandingWithGradient(): JSX.Element {
   const navItems = [
     { name: "Features", link: "#features" },
     { name: "Causes", link: "#causes" },
@@ -254,7 +260,6 @@ export default function HandcraftedLandingWithGradient() {
   const baseSpeed = 60;
   const halfWidth = trackWidth ? trackWidth / 2 : 0;
   const duration = halfWidth ? Math.max(10, halfWidth / baseSpeed) : 30;
-
   const [paused, setPaused] = useState(false);
 
   // parallax
@@ -308,7 +313,7 @@ export default function HandcraftedLandingWithGradient() {
         <div className="absolute left-8 bottom-[-10%] w-80 h-80 rounded-full bg-gradient-to-br from-yellow-200/30 to-orange-200/10 blur-3xl opacity-65" />
       </div>
 
-      {/* Navbar */}
+      {/* ---------- Fixed, responsive Navbar (Clerk-ready) ---------- */}
       <Navbar className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 w-[min(98%,1200px)]">
         <NavBody className="bg-white/80 backdrop-blur-md rounded-xl shadow-sm border border-slate-200/60 px-4 py-3">
           <div className="flex items-center gap-4">
@@ -323,7 +328,13 @@ export default function HandcraftedLandingWithGradient() {
             </div>
           </div>
 
-          <NavItems items={navItems} className="mx-6" />
+          {/* Center: nav links (hidden on small screens) */}
+          <div className="hidden md:flex items-center gap-6">
+            <NavItems
+              items={navItems}
+              className="flex items-center gap-6 text-sm text-slate-700"
+            />
+          </div>
 
           <div className="flex items-center gap-3">
             <NavbarButton
@@ -337,6 +348,7 @@ export default function HandcraftedLandingWithGradient() {
           </div>
         </NavBody>
 
+        {/* Mobile navigation area */}
         <MobileNav>
           <MobileNavHeader>
             <div className="flex items-center gap-3">
@@ -388,17 +400,15 @@ export default function HandcraftedLandingWithGradient() {
         </MobileNav>
       </Navbar>
 
+      {/* rest of page (hero, features, causes, testimonials, help, footer) */}
       <main className="relative z-20 mt-28">
-        {/* Hero with uploaded image (poor-img.jpg in /public) */}
+        {/* Hero with uploaded image (put booom.jpg in /public) */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="relative rounded-2xl overflow-hidden border shadow-sm">
-            <Image
+            <img
               src="/poor-img.jpg"
-              alt="Child receiving a donation - showing the impact of community donations"
-              width={1200}
-              height={360}
+              alt="Child receiving a donation"
               className="w-full h-[360px] object-cover object-center brightness-[0.65] dark:brightness-[0.5]"
-              priority
             />
             <div className="absolute inset-0 flex items-center">
               <div className="max-w-4xl mx-auto px-6 text-white">
@@ -580,7 +590,7 @@ export default function HandcraftedLandingWithGradient() {
             <h2 className="text-2xl font-bold mb-2">What you get</h2>
             <p className="text-slate-600">
               We designed GoodWorks to avoid jargon. These are the practical
-              things you&apos;ll actually use.
+              things you'll actually use.
             </p>
           </div>
 
@@ -642,7 +652,7 @@ export default function HandcraftedLandingWithGradient() {
           </div>
         </section>
 
-        {/* testimonials - looping carousel, pause on hover */}
+        {/* testimonials */}
         <section id="stories" className="max-w-6xl mx-auto px-6 py-14">
           <div className="mb-6">
             <h2 className="text-2xl font-bold">Voices from our community</h2>

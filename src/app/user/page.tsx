@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -14,9 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
@@ -27,12 +26,12 @@ import {
   Bell,
   Search,
   ArrowRight,
-  Clock,
   FileText,
   MapPin,
+  Star,
 } from "lucide-react";
-
-import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignOutButton, UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
 
 
 /* ---------------- Types & Local dataset ---------------- */
@@ -53,8 +52,6 @@ type MyDonation = {
 type Campaign = { id: string; title: string; progress: number; location?: string };
 
 const STORAGE_KEY = "demo_donations_v1";
-
-const MOCK_DONOR = { id: "donor_101", name: "Venkatesh", initials: "V", email: "venkatesh@example.com" };
 
 const seedDonations: MyDonation[] = [
   { id: "m1", ngoName: "Seva Foundation", type: "Cloth", qty: "3 bags", status: "Completed", createdAt: "2025-09-05", receiptUrl: "/receipts/m1.pdf", timeline: [{ status: "Created", at: "2025-09-01" }, { status: "Accepted", at: "2025-09-02" }, { status: "Completed", at: "2025-09-05" }] },
@@ -100,9 +97,35 @@ function saveDonations(list: MyDonation[]) {
 
 /* ---------------- Component ---------------- */
 
-
 export default function DonorLandingPretty() {
-  const [user] = useState(MOCK_DONOR);
+  // Clerk user hook
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  // compute display name and initials with fallbacks
+  const displayName = (() => {
+    if (!isLoaded || !isSignedIn || !user) return "Guest";
+    // prefer fullName if available
+    const full = (user.fullName && user.fullName.trim()) || "";
+    if (full) return full;
+    const fnLn = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+    if (fnLn) return fnLn;
+    // fallback to primary email
+    const email = user.emailAddresses && user.emailAddresses[0]?.emailAddress;
+    if (email) return email.split("@")[0];
+    return "User";
+  })();
+
+  const initials = (() => {
+    if (!isLoaded || !isSignedIn || !user) return "G";
+    const name = user.fullName || `${user.firstName || ""} ${user.lastName || ""}`.trim() || (user.emailAddresses?.[0]?.emailAddress ?? "");
+    if (!name) return "U";
+    // pick up to 2 initials
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  })();
+
+  // Use local demo state as before
   const [donations, setDonations] = useState<MyDonation[]>(() => {
     if (typeof window === "undefined") return seedDonations;
     return loadDonations();
@@ -119,14 +142,13 @@ export default function DonorLandingPretty() {
 
   // make donation form (multi-step UI simplified)
   const [formStep, setFormStep] = useState(1);
-  const [form, setForm] = useState<{ type: string; qty: string; ngo: string; notes?: string }>({ type: "Cloth", qty: "", ngo: "Seva Foundation", notes: "" });          
+  const [form, setForm] = useState<{ type: string; qty: string; ngo: string; notes?: string }>({ type: "Cloth", qty: "", ngo: "Seva Foundation", notes: "" });
 
   // computed stats
   const totalDonations = donations.length;
   const completedCount = donations.filter(d => d.status === "Completed").length;
   const itemsDonated = donations.filter(d => d.type !== "Money").length;
   const moneyDonated = donations.filter(d => d.type === "Money").reduce((s, d) => {
-    // parse rupee amounts if present like "₹500"
     const n = Number((d.qty || "").replace(/[₹, ]/g, "")) || 0;
     return s + n;
   }, 0);
@@ -136,17 +158,13 @@ export default function DonorLandingPretty() {
     saveDonations(donations);
   }, [donations]);
 
-  // Demo life-cycle: when a new donation with status Created is added, auto-advance it:
+  // Demo life-cycle auto-advance for Created items
   useEffect(() => {
-    // find items that are Created and have no auto timers set
     const created = donations.filter(d => d.status === "Created");
     created.forEach((d, idx) => {
-      // schedule advance only once per item (we'll attach a temporary timeline note on advance so it won't double-run)
       const alreadyScheduled = d.timeline && d.timeline.some(t => t.note === "auto-scheduled");
       if (!alreadyScheduled) {
-        // mark timeline with a placeholder so we know it's scheduled
         setDonations(prev => prev.map(p => p.id === d.id ? { ...p, timeline: [...(p.timeline || []), { status: d.status, at: p.createdAt, note: "auto-scheduled" }] } : p));
-        // Advance flow: Accepted after 4s, In Progress after 6s, Completed after 10s
         setTimeout(() => advanceStatusLocal(d.id, "Accepted", "NGO accepted donation"), 4000 + idx * 1000);
         setTimeout(() => advanceStatusLocal(d.id, "In Progress", "Pickup started"), 7000 + idx * 1000);
         setTimeout(() => advanceStatusLocal(d.id, "Completed", "Donation received & processed"), 11000 + idx * 1000);
@@ -165,21 +183,6 @@ export default function DonorLandingPretty() {
     }));
   }
 
-  function quickCreate(type: string) {
-    const newDonation: MyDonation = {
-      id: `local_${Date.now()}`,
-      ngoName: form.ngo,
-      type,
-      qty: type === "Money" ? "₹500" : type === "Cloth" ? "2 bags" : "5 meals",
-      status: "Created",
-      createdAt: new Date().toISOString().slice(0, 10),
-      timeline: [{ status: "Created", at: new Date().toISOString().slice(0, 10) }],
-    };
-    setDonations(p => [newDonation, ...p]);
-    // small accessible feedback
-    setTimeout(() => window?.alert?.("Donation created — demo mode (local). NGO will review soon."), 200);
-  }
-
   function openMakeFor(type?: string) {
     if (type) setForm(f => ({ ...f, type }));
     setFormStep(1);
@@ -187,7 +190,6 @@ export default function DonorLandingPretty() {
   }
 
   function submitMakeForm() {
-    // basic validation
     if (!form.qty.trim()) {
       window.alert("Enter quantity or amount");
       return;
@@ -217,15 +219,6 @@ export default function DonorLandingPretty() {
       return (d.ngoName + " " + d.type + " " + d.qty).toLowerCase().includes(q);
     });
   }
-
-  // pretty small components inside
-  const KPI = ({ title, value, subtitle }: { title: string; value: string | number; subtitle?: string }) => (
-    <div className="bg-gradient-to-br from-white/60 to-white/40 dark:from-slate-800/60 dark:to-slate-800/30 p-4 rounded-lg shadow-sm hover:shadow-md transition">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
-      {subtitle && <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>}
-    </div>
-  );
 
   // details drawer
   function DonationDetailDrawer({ donation, onClose }: { donation: MyDonation | null; onClose: () => void }) {
@@ -296,44 +289,56 @@ export default function DonorLandingPretty() {
         <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-4 rounded-lg shadow-md">
           <div className="flex items-center gap-4">
             <Avatar>
-              <AvatarFallback className="bg-white text-indigo-600">{user.initials}</AvatarFallback>
+              <AvatarFallback className="bg-white text-indigo-600">{initials}</AvatarFallback>
             </Avatar>
             <div>
-              <div className="text-lg font-semibold">Namaste, {user.name}</div>
+              <div className="text-lg font-semibold">Namaste, {displayName}</div>
               <div className="text-sm opacity-90">Your impact at a glance</div>
             </div>
           </div>
 
+
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-white/10 px-3 py-2 rounded-full gap-2">
-              <Search className="w-4 h-4 opacity-90" />
-              <Input placeholder="Search donations or NGOs" value={query} onChange={(e) => setQuery(e.target.value)} className="bg-transparent border-0 p-0 focus:outline-none" />
-            </div>
+            {/* Clerk auth controls */}
+            <div className="flex items-center gap-3">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button className="flex-1">Sign in</Button>
+                </SignInButton>
+              </SignedOut>
 
-            <button aria-label="notifications" className="relative inline-flex items-center justify-center p-2 bg-white/10 rounded-full">
-              <Bell className="w-5 h-5" />
-              {/* small unread dot for demo */}
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-400 rounded-full" />
-            </button>
-
-            {/* ADDED: Theme toggle + Clerk sign-in/sign-out */}
-            <div className="mt-3 flex items-center gap-3">
-              <SignInButton mode="modal">
-                <Button className="flex-1">Sign in</Button>
-              </SignInButton>
-              <SignOutButton>
-                <Button variant="ghost">Sign out</Button>
-              </SignOutButton>
+              <SignedIn>
+                <ClerkLoaded>
+                  <UserButton afterSignOutUrl="/" />   {/* ✅ redirect to "/" after sign out */}
+                </ClerkLoaded>
+                <ClerkLoading>
+                  <div className="w-9 h-9 rounded-full bg-slate-100" />
+                </ClerkLoading>
+              </SignedIn>
             </div>
           </div>
         </div>
 
         {/* KPI row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KPI title="Total Donations" value={totalDonations} subtitle={`${moneyDonated ? `₹${moneyDonated}` : ""}`} />
-          <KPI title="Completed" value={completedCount} />
-          <KPI title="Items Donated" value={itemsDonated} />
-          <KPI title="Next Pickup" value={"None"} subtitle={"Schedule pickup"} />
+          <div className="bg-gradient-to-br from-white/60 to-white/40 dark:from-slate-800/60 dark:to-slate-800/30 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+            <div className="text-sm text-muted-foreground">Total Donations</div>
+            <div className="mt-1 text-2xl font-semibold">{totalDonations}</div>
+            <div className="text-xs text-muted-foreground mt-1">{moneyDonated ? `₹${moneyDonated}` : ""}</div>
+          </div>
+          <div className="bg-gradient-to-br from-white/60 to-white/40 dark:from-slate-800/60 dark:to-slate-800/30 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+            <div className="text-sm text-muted-foreground">Completed</div>
+            <div className="mt-1 text-2xl font-semibold">{completedCount}</div>
+          </div>
+          <div className="bg-gradient-to-br from-white/60 to-white/40 dark:from-slate-800/60 dark:to-slate-800/30 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+            <div className="text-sm text-muted-foreground">Items Donated</div>
+            <div className="mt-1 text-2xl font-semibold">{itemsDonated}</div>
+          </div>
+          <div className="bg-gradient-to-br from-white/60 to-white/40 dark:from-slate-800/60 dark:to-slate-800/30 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+            <div className="text-sm text-muted-foreground">Next Pickup</div>
+            <div className="mt-1 text-2xl font-semibold">None</div>
+            <div className="text-xs text-muted-foreground mt-1">Schedule pickup</div>
+          </div>
         </div>
 
         {/* CTA tiles */}
@@ -375,7 +380,7 @@ export default function DonorLandingPretty() {
           </button>
         </div>
 
-        {/* Recent donations > filters */}
+        {/* Recent donations & side */}
         <div className="grid lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
             <Card>
@@ -420,7 +425,6 @@ export default function DonorLandingPretty() {
               </CardContent>
             </Card>
 
-            {/* Campaigns small list */}
             <Card>
               <CardHeader>
                 <CardTitle>Suggested Campaigns</CardTitle>
@@ -445,7 +449,6 @@ export default function DonorLandingPretty() {
             </Card>
           </div>
 
-          {/* Right column: impact + quick links */}
           <aside className="space-y-4">
             <Card>
               <CardHeader>
@@ -513,7 +516,7 @@ export default function DonorLandingPretty() {
                 <div className="grid grid-cols-2 gap-2 mt-3">
                   <button onClick={() => setForm(f => ({ ...f, type: "Cloth" }))} className={`p-3 rounded ${form.type === "Cloth" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Cloth</button>
                   <button onClick={() => setForm(f => ({ ...f, type: "Food" }))} className={`p-3 rounded ${form.type === "Food" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Food</button>
-                  <button onClick={() => setForm(f => ({ ...f, type: "Money" }))} className={`p-3 rounded ${form.type === "Money" ? "bg-indigo-50 border border-indigo-200" : "bg.white"}`}>Money</button>
+                  <button onClick={() => setForm(f => ({ ...f, type: "Money" }))} className={`p-3 rounded ${form.type === "Money" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Money</button>
                   <button onClick={() => setForm(f => ({ ...f, type: "Other" }))} className={`p-3 rounded ${form.type === "Other" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Other</button>
                 </div>
               </div>
