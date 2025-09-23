@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 /**
  * HandcraftedLandingWithGradient.tsx
- * Handcrafted landing page with subtle layered gradient background and floating elements.
+ 
  *
  * Drop in place of your previous landing component.
  */
