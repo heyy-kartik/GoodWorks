@@ -32,6 +32,9 @@ import {
   MapPin,
 } from "lucide-react";
 
+import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
+
+
 /* ---------------- Types & Local dataset ---------------- */
 
 type Status = "Created" | "Accepted" | "In Progress" | "Completed" | "Rejected";
@@ -97,6 +100,7 @@ function saveDonations(list: MyDonation[]) {
 
 /* ---------------- Component ---------------- */
 
+
 export default function DonorLandingPretty() {
   const [user] = useState(MOCK_DONOR);
   const [donations, setDonations] = useState<MyDonation[]>(() => {
@@ -115,7 +119,7 @@ export default function DonorLandingPretty() {
 
   // make donation form (multi-step UI simplified)
   const [formStep, setFormStep] = useState(1);
-  const [form, setForm] = useState<{ type: string; qty: string; ngo: string; notes?: string }>({ type: "Cloth", qty: "", ngo: "Seva Foundation", notes: "" });
+  const [form, setForm] = useState<{ type: string; qty: string; ngo: string; notes?: string }>({ type: "Cloth", qty: "", ngo: "Seva Foundation", notes: "" });          
 
   // computed stats
   const totalDonations = donations.length;
@@ -311,6 +315,16 @@ export default function DonorLandingPretty() {
               {/* small unread dot for demo */}
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-400 rounded-full" />
             </button>
+
+            {/* ADDED: Theme toggle + Clerk sign-in/sign-out */}
+            <div className="mt-3 flex items-center gap-3">
+              <SignInButton mode="modal">
+                <Button className="flex-1">Sign in</Button>
+              </SignInButton>
+              <SignOutButton>
+                <Button variant="ghost">Sign out</Button>
+              </SignOutButton>
+            </div>
           </div>
         </div>
 
@@ -499,7 +513,7 @@ export default function DonorLandingPretty() {
                 <div className="grid grid-cols-2 gap-2 mt-3">
                   <button onClick={() => setForm(f => ({ ...f, type: "Cloth" }))} className={`p-3 rounded ${form.type === "Cloth" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Cloth</button>
                   <button onClick={() => setForm(f => ({ ...f, type: "Food" }))} className={`p-3 rounded ${form.type === "Food" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Food</button>
-                  <button onClick={() => setForm(f => ({ ...f, type: "Money" }))} className={`p-3 rounded ${form.type === "Money" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Money</button>
+                  <button onClick={() => setForm(f => ({ ...f, type: "Money" }))} className={`p-3 rounded ${form.type === "Money" ? "bg-indigo-50 border border-indigo-200" : "bg.white"}`}>Money</button>
                   <button onClick={() => setForm(f => ({ ...f, type: "Other" }))} className={`p-3 rounded ${form.type === "Other" ? "bg-indigo-50 border border-indigo-200" : "bg-white"}`}>Other</button>
                 </div>
               </div>
@@ -542,17 +556,6 @@ export default function DonorLandingPretty() {
 
       {/* Detail drawer */}
       <DonationDetailDrawer donation={detail} onClose={() => setDetail(null)} />
-    </div>
-  );
-}
-
-/* tiny KPI component defined inside to keep file self-contained */
-function KPI({ title, value, subtitle }: { title: string; value: number | string; subtitle?: string }) {
-  return (
-    <div className="p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
-      {subtitle && <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>}
     </div>
   );
 }
