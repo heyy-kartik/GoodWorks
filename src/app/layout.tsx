@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Poppins, DM_Sans, Red_Hat_Display, Unbounded } from "next/font/google";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -6,7 +8,29 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-poppins",
+});
 
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-dm-sans",
+});
+
+const redHatDisplay = Red_Hat_Display({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-red-hat-display",
+});
+
+const unbounded = Unbounded({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-unbounded",
+});
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -25,7 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased ${poppins.variable} ${dmSans.variable} ${redHatDisplay.variable} ${unbounded.variable}`}
       >
         {children}
       </body>

@@ -10,6 +10,7 @@ import {
   Eye,
   Menu,
   X,
+  Link,
 } from "lucide-react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -84,24 +85,21 @@ const TESTIMONIALS = [
     name: "Arun Patel",
     role: "Donor, Ahmedabad",
     rating: 5,
-    quote:
-      "Easy to use, quick confirmation and helpful receipts for tax time.",
+    quote: "Easy to use, quick confirmation and helpful receipts for tax time.",
     avatar: "AP",
   },
   {
     name: "Sneha Rao",
     role: "Volunteer, Bangalore",
     rating: 5,
-    quote:
-      "Great platform for running local drives — saved us so much time.",
+    quote: "Great platform for running local drives — saved us so much time.",
     avatar: "SR",
   },
   {
     name: "Vikram Singh",
     role: "NGO Volunteer, Lucknow",
     rating: 4,
-    quote:
-      "Smooth coordination with donors and clear pickup slots.",
+    quote: "Smooth coordination with donors and clear pickup slots.",
     avatar: "VS",
   },
   {
@@ -124,8 +122,7 @@ const TESTIMONIALS = [
     name: "Nisha Gupta",
     role: "Donor, Jaipur",
     rating: 4,
-    quote:
-      "Pickup scheduling worked well and the volunteers were punctual.",
+    quote: "Pickup scheduling worked well and the volunteers were punctual.",
     avatar: "NG",
   },
   {
@@ -148,8 +145,7 @@ const TESTIMONIALS = [
     name: "Praveen Nair",
     role: "Volunteer, Kochi",
     rating: 5,
-    quote:
-      "The platform helped us organize disaster-relief donations quickly.",
+    quote: "The platform helped us organize disaster-relief donations quickly.",
     avatar: "PN",
   },
 ];
@@ -166,7 +162,10 @@ function SmallStars({ n = 5 }: { n?: number }) {
   return (
     <div className="flex items-center gap-1 text-yellow-400">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`w-4 h-4 ${i < n ? "opacity-100" : "opacity-30"}`} />
+        <Star
+          key={i}
+          className={`w-4 h-4 ${i < n ? "opacity-100" : "opacity-30"}`}
+        />
       ))}
     </div>
   );
@@ -198,7 +197,13 @@ function SoftCounter({ n }: { n: number }) {
 }
 
 /* ---------------- Section reveal (very subtle) ---------------- */
-function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Reveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
 
@@ -230,11 +235,14 @@ export default function HandcraftedLandingWithGradient() {
 
   // speed control
   const baseSpeed = 60; // pixels per second
-  const duration = trackWidth ? (trackWidth / 2) / baseSpeed : 30;
+  const duration = trackWidth ? trackWidth / 2 / baseSpeed : 30;
 
   // rotate testimonial index for small card highlight (keeps earlier behavior)
   useEffect(() => {
-    const id = setInterval(() => setTestimonialIndex((i) => (i + 1) % TESTIMONIALS.length), 5000);
+    const id = setInterval(
+      () => setTestimonialIndex((i) => (i + 1) % TESTIMONIALS.length),
+      5000
+    );
     return () => clearInterval(id);
   }, []);
 
@@ -289,7 +297,10 @@ export default function HandcraftedLandingWithGradient() {
         <div className="absolute left-8 bottom-[-10%] w-80 h-80 rounded-full bg-gradient-to-br from-yellow-200/30 to-orange-200/10 blur-3xl opacity-65" />
 
         {/* subtle diagonal stripe overlay */}
-        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+        <svg
+          className="absolute inset-0 w-full h-full"
+          preserveAspectRatio="none"
+        >
           <defs>
             <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
               <stop offset="0%" stopColor="#fff" stopOpacity="0.02" />
@@ -305,24 +316,49 @@ export default function HandcraftedLandingWithGradient() {
       <header className="relative z-20">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg border border-slate-200 grid place-items-center font-semibold text-indigo-700 bg-white/80 shadow-sm">GW</div>
+            <div className="w-10 h-10 rounded-lg border border-slate-200 grid place-items-center font-semibold text-indigo-700 bg-white/80 shadow-sm">
+              GW
+            </div>
             <div>
               <div className="font-semibold">GoodWorks</div>
-              <div className="text-xs text-slate-500">Trusted donations — locally.</div>
+              <div className="text-xs text-slate-500">
+                Trusted donations — locally.
+              </div>
             </div>
           </div>
 
           <nav className="hidden md:flex items-center gap-6 text-sm text-slate-700">
-            <a href="#features" className="hover:text-slate-900">Features</a>
-            <a href="#causes" className="hover:text-slate-900">Causes</a>
-            <a href="#stories" className="hover:text-slate-900">Stories</a>
-            <a href="#help" className="hover:text-slate-900">Help</a>
-            <Button onClick={() => (window.location.href = "/dashboard")} className="ml-2">Open Dashboard</Button>
+            <a href="#features" className="hover:text-slate-900">
+              Features
+            </a>
+            <a href="#causes" className="hover:text-slate-900">
+              Causes
+            </a>
+            <a href="#stories" className="hover:text-slate-900">
+              Stories
+            </a>
+            <a href="#help" className="hover:text-slate-900">
+              Help
+            </a>
+            <Button
+              onClick={() => (window.location.href = "/dashboard")}
+              className="ml-2"
+            >
+              Open Dashboard
+            </Button>
           </nav>
 
           <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setMobileOpen(!mobileOpen)}>
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </Button>
           </div>
         </div>
@@ -337,12 +373,27 @@ export default function HandcraftedLandingWithGradient() {
               className="md:hidden max-w-6xl mx-auto px-4"
             >
               <div className="bg-white rounded-lg border p-4 shadow-sm">
-                <a className="block py-2" href="#features">Features</a>
-                <a className="block py-2" href="#causes">Causes</a>
-                <a className="block py-2" href="#stories">Stories</a>
-                <a className="block py-2" href="#help">Help</a>
+                <a className="block py-2" href="#features">
+                  Features
+                </a>
+                <a className="block py-2" href="#causes">
+                  Causes
+                </a>
+                <a className="block py-2" href="#stories">
+                  Stories
+                </a>
+                <a className="block py-2" href="#help">
+                  Help
+                </a>
                 <div className="pt-3">
-                  <Button onClick={() => (window.location.href = "/dashboard")} className="w-full">Open Dashboard</Button>
+                  <Link href="/boom">
+                    <Button
+                      onClick={() => (window.location.href = "/dashboard")}
+                      className="w-full"
+                    >
+                      Open Dashboard
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -358,37 +409,66 @@ export default function HandcraftedLandingWithGradient() {
               Give simply. Track honestly.
             </h1>
             <p className="mt-4 text-slate-700 max-w-xl">
-              GoodWorks is a web-first donation platform built for people — donors, volunteers and NGOs. No frills, clear steps: donate, schedule pickup, receive confirmation, and download receipts.
+              GoodWorks is a web-first donation platform built for people —
+              donors, volunteers and NGOs. No frills, clear steps: donate,
+              schedule pickup, receive confirmation, and download receipts.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={() => (window.location.href = "/dashboard")} className="flex items-center gap-2 shadow-md">
+              <Button
+                onClick={() => (window.location.href = "/dashboard")}
+                className="flex items-center gap-2 shadow-md"
+              >
                 Open Dashboard <ArrowRight className="w-4 h-4" />
               </Button>
 
-              <Button variant="outline" onClick={() => window.scrollTo({ top: 720, behavior: "smooth" })}>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  window.scrollTo({ top: 720, behavior: "smooth" })
+                }
+              >
                 See how it works
               </Button>
             </div>
 
             <div className="mt-6 text-sm text-slate-500">
-              <div>Rated <span className="font-semibold text-slate-700">4.8</span> by donors like you</div>
-              <div className="mt-2">Help: <a className="text-indigo-600">support@goodworks.example</a> · Mon–Sat, 9am–6pm</div>
+              <div>
+                Rated <span className="font-semibold text-slate-700">4.8</span>{" "}
+                by donors like you
+              </div>
+              <div className="mt-2">
+                Help:{" "}
+                <a className="text-indigo-600">support@goodworks.example</a> ·
+                Mon–Sat, 9am–6pm
+              </div>
             </div>
 
             {/* quick snapshot cards */}
             <div className="mt-8 grid grid-cols-3 gap-3 max-w-sm">
               <div className="bg-white/80 backdrop-blur rounded-lg border p-3 text-center shadow-sm">
                 <div className="text-xs text-slate-500">Donations</div>
-                <div className="font-semibold text-lg"><SoftCounter n={Math.floor(IMPACT_STATS.totalDonations / 100000)} />L+</div>
+                <div className="font-semibold text-lg">
+                  <SoftCounter
+                    n={Math.floor(IMPACT_STATS.totalDonations / 100000)}
+                  />
+                  L+
+                </div>
               </div>
               <div className="bg-white/80 backdrop-blur rounded-lg border p-3 text-center shadow-sm">
                 <div className="text-xs text-slate-500">Lives</div>
-                <div className="font-semibold text-lg"><SoftCounter n={Math.floor(IMPACT_STATS.livesImpacted / 1000)} />K+</div>
+                <div className="font-semibold text-lg">
+                  <SoftCounter
+                    n={Math.floor(IMPACT_STATS.livesImpacted / 1000)}
+                  />
+                  K+
+                </div>
               </div>
               <div className="bg-white/80 backdrop-blur rounded-lg border p-3 text-center shadow-sm">
                 <div className="text-xs text-slate-500">NGOs</div>
-                <div className="font-semibold text-lg">{IMPACT_STATS.activeNGOs}+</div>
+                <div className="font-semibold text-lg">
+                  {IMPACT_STATS.activeNGOs}+
+                </div>
               </div>
             </div>
           </div>
@@ -403,7 +483,9 @@ export default function HandcraftedLandingWithGradient() {
                 <div className="flex justify-between">
                   <div>
                     <div className="font-medium">Seva Foundation</div>
-                    <div className="text-xs text-slate-500">Clothes donation — confirmed</div>
+                    <div className="text-xs text-slate-500">
+                      Clothes donation — confirmed
+                    </div>
                   </div>
                   <div className="text-xs text-slate-500">2 days ago</div>
                 </div>
@@ -411,12 +493,17 @@ export default function HandcraftedLandingWithGradient() {
                 <div className="flex justify-between">
                   <div>
                     <div className="font-medium">Local Kitchen</div>
-                    <div className="text-xs text-slate-500">Food kits scheduled</div>
+                    <div className="text-xs text-slate-500">
+                      Food kits scheduled
+                    </div>
                   </div>
                   <div className="text-xs text-slate-500">Today</div>
                 </div>
 
-                <div className="text-xs text-slate-500">Tip: after confirmation you can download a receipt from your dashboard.</div>
+                <div className="text-xs text-slate-500">
+                  Tip: after confirmation you can download a receipt from your
+                  dashboard.
+                </div>
               </CardContent>
             </Card>
 
@@ -427,14 +514,21 @@ export default function HandcraftedLandingWithGradient() {
               <CardContent>
                 <div className="space-y-3">
                   {CAUSES.map((c) => (
-                    <div key={c.name} className="flex items-center justify-between">
+                    <div
+                      key={c.name}
+                      className="flex items-center justify-between"
+                    >
                       <div>
                         <div className="font-medium">{c.name}</div>
-                        <div className="text-xs text-slate-500">Supported by neighbours</div>
+                        <div className="text-xs text-slate-500">
+                          Supported by neighbours
+                        </div>
                       </div>
                       <div className="w-36">
                         <Progress value={c.raised} className="h-2" />
-                        <div className="text-xs text-slate-500 mt-1">{c.raised}% · {c.donors} donors</div>
+                        <div className="text-xs text-slate-500 mt-1">
+                          {c.raised}% · {c.donors} donors
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -443,8 +537,16 @@ export default function HandcraftedLandingWithGradient() {
             </Card>
 
             <div className="flex gap-3">
-              <Button variant="ghost" className="flex-1">How donations work</Button>
-              <Button variant="outline" className="flex-1" onClick={() => (window.location.href = "/dashboard")}>Open Dashboard</Button>
+              <Button variant="ghost" className="flex-1">
+                How donations work
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => (window.location.href = "/dashboard")}
+              >
+                Open Dashboard
+              </Button>
             </div>
           </div>
         </section>
@@ -453,17 +555,24 @@ export default function HandcraftedLandingWithGradient() {
         <section id="features" className="max-w-6xl mx-auto px-6 py-14">
           <Reveal>
             <h2 className="text-2xl font-bold mb-4">What you get</h2>
-            <p className="text-slate-600 mb-8 max-w-2xl">We designed GoodWorks to avoid jargon. These are the practical things you'll actually use.</p>
+            <p className="text-slate-600 mb-8 max-w-2xl">
+              We designed GoodWorks to avoid jargon. These are the practical
+              things you'll actually use.
+            </p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {FEATURES.map((f) => (
                 <Card key={f.title} className="h-full">
                   <CardContent>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-md bg-indigo-50 grid place-items-center text-indigo-700">{f.icon}</div>
+                      <div className="w-10 h-10 rounded-md bg-indigo-50 grid place-items-center text-indigo-700">
+                        {f.icon}
+                      </div>
                       <div>
                         <div className="font-semibold">{f.title}</div>
-                        <div className="text-sm text-slate-500 mt-1">{f.desc}</div>
+                        <div className="text-sm text-slate-500 mt-1">
+                          {f.desc}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -476,7 +585,9 @@ export default function HandcraftedLandingWithGradient() {
         {/* stories/testimonials */}
         <section id="stories" className="max-w-6xl mx-auto px-6 py-14">
           <Reveal>
-            <h2 className="text-2xl font-bold mb-6">Voices from our community</h2>
+            <h2 className="text-2xl font-bold mb-6">
+              Voices from our community
+            </h2>
 
             {/* carousel viewport */}
             <div className="relative overflow-hidden rounded-lg">
@@ -485,11 +596,7 @@ export default function HandcraftedLandingWithGradient() {
                 ref={trackRef}
                 className="flex gap-6 items-stretch py-6"
                 // animate from 0 to -halfWidth and loop
-                animate={
-                  trackWidth
-                    ? { x: [0, -(trackWidth / 2)] }
-                    : { x: 0 }
-                }
+                animate={trackWidth ? { x: [0, -(trackWidth / 2)] } : { x: 0 }}
                 transition={
                   trackWidth
                     ? { duration, ease: "linear", repeat: Infinity }
@@ -498,17 +605,26 @@ export default function HandcraftedLandingWithGradient() {
                 style={{ willChange: "transform" }}
               >
                 {doubled.map((t, i) => (
-                  <Card key={`${t.name}-${i}`} className="min-w-[320px] max-w-[320px] flex-shrink-0">
+                  <Card
+                    key={`${t.name}-${i}`}
+                    className="min-w-[320px] max-w-[320px] flex-shrink-0"
+                  >
                     <CardContent>
                       <div className="flex items-start gap-4">
                         <Avatar>
-                          <AvatarFallback className="bg-indigo-600">{t.avatar}</AvatarFallback>
+                          <AvatarFallback className="bg-indigo-600">
+                            {t.avatar}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-semibold">{t.name}</div>
                           <div className="text-xs text-slate-500">{t.role}</div>
-                          <div className="mt-2 text-sm text-slate-700 italic">“{t.quote}”</div>
-                          <div className="mt-3"><SmallStars n={t.rating} /></div>
+                          <div className="mt-2 text-sm text-slate-700 italic">
+                            “{t.quote}”
+                          </div>
+                          <div className="mt-3">
+                            <SmallStars n={t.rating} />
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -517,8 +633,22 @@ export default function HandcraftedLandingWithGradient() {
               </motion.div>
 
               {/* subtle left/right fading masks to soften edges */}
-              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12" style={{ background: "linear-gradient(90deg, white 0%, rgba(255,255,255,0) 100%)", opacity: 0.9 }} />
-              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12" style={{ background: "linear-gradient(270deg, white 0%, rgba(255,255,255,0) 100%)", opacity: 0.9 }} />
+              <div
+                className="pointer-events-none absolute left-0 top-0 bottom-0 w-12"
+                style={{
+                  background:
+                    "linear-gradient(90deg, white 0%, rgba(255,255,255,0) 100%)",
+                  opacity: 0.9,
+                }}
+              />
+              <div
+                className="pointer-events-none absolute right-0 top-0 bottom-0 w-12"
+                style={{
+                  background:
+                    "linear-gradient(270deg, white 0%, rgba(255,255,255,0) 100%)",
+                  opacity: 0.9,
+                }}
+              />
             </div>
           </Reveal>
         </section>
@@ -530,12 +660,26 @@ export default function HandcraftedLandingWithGradient() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-lg font-semibold">Questions?</h3>
-                  <p className="text-sm text-slate-500 mt-1">We keep support simple — email or chat during office hours.</p>
-                  <div className="text-sm text-slate-600 mt-3">support@goodworks.example · Mon–Sat, 9am–6pm</div>
+                  <p className="text-sm text-slate-500 mt-1">
+                    We keep support simple — email or chat during office hours.
+                  </p>
+                  <div className="text-sm text-slate-600 mt-3">
+                    support@goodworks.example · Mon–Sat, 9am–6pm
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-slate-500">Prefer a quick guide?</div>
-                  <Button variant="outline" className="mt-3" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Read quick start</Button>
+                  <div className="text-sm text-slate-500">
+                    Prefer a quick guide?
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
+                  >
+                    Read quick start
+                  </Button>
                 </div>
               </div>
             </div>
@@ -544,16 +688,153 @@ export default function HandcraftedLandingWithGradient() {
       </main>
 
       {/* footer */}
-      <footer className="relative z-20 max-w-6xl mx-auto px-6 py-8 text-sm text-slate-600">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <div className="font-semibold">GoodWorks</div>
-            <div className="text-xs">Made with ❤️ by a small team — built for people who actually donate.</div>
+      <footer className="relative z-20 w-full border-t bg-white/80 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          {/* Main footer content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            {/* Company Info */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-md border border-slate-200 grid place-items-center font-bold text-indigo-700 bg-white/90 shadow-sm">
+                  GW
+                </div>
+                <div>
+                  <div className="font-bold text-slate-800 font-">
+                    GoodWorks
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Trusted donations — locally
+                  </div>
+                </div>
+              </div>
+              <p className="text-[15px] text-slate-600 leading-relaxed font-poppins ">
+                Connecting donors with verified NGOs to create meaningful impact
+                in local communities across India.
+              </p>
+              <div className="text-sm font-poppins text-slate-500">
+                Made with <span className="text-pink-500">♥</span> by a
+                dedicated team
+              </div>
+            </div>
+
+            {/* Our Services */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-slate-800">Our Services</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer ">
+                  Item Donations
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Financial Giving
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Local Campaigns
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  NGO Partnership
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Volunteer Coordination
+                </li>
+              </ul>
+            </div>
+
+            {/* Focus Areas */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-slate-800">Focus Areas</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Education Support
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Healthcare Access
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Food Security
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Disaster Relief
+                </li>
+                <li className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  Community Development
+                </li>
+              </ul>
+            </div>
+
+            {/* Quick Links */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-slate-800">Quick Links</h3>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li>
+                  <a
+                    href="/about"
+                    className="hover:text-indigo-600 transition-colors"
+                  >
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/how-it-works"
+                    className="hover:text-indigo-600 transition-colors"
+                  >
+                    How It Works
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/ngo-partners"
+                    className="hover:text-indigo-600 transition-colors"
+                  >
+                    NGO Partners
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/impact"
+                    className="hover:text-indigo-600 transition-colors"
+                  >
+                    Our Impact
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/support"
+                    className="hover:text-indigo-600 transition-colors"
+                  >
+                    Support Center
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div>© {new Date().getFullYear()}</div>
-            <div className="text-xs">Terms · Privacy · Contact</div>
+          {/* Bottom bar */}
+          <div className="border-t border-slate-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-600">
+            <div className="flex items-center gap-6">
+              <a
+                href="/terms"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                Terms of Service
+              </a>
+              <a
+                href="/privacy"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="mailto:support@goodworks.example"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                Contact Us
+              </a>
+            </div>
+
+            <div className="text-xs text-slate-400">
+              © {new Date().getFullYear()} GoodWorks. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>
