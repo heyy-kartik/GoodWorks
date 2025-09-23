@@ -1,23 +1,23 @@
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
 import {
-  Heart,
-  Shield,
-  Users,
-  ArrowRight,
-  Star,
-  Eye,
-  Menu,
-  X,
-  Link,
-} from "lucide-react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+  Navbar,
+  NavBody,
+  NavItems,
+  MobileNav,
+  MobileNavHeader,
+  MobileNavMenu,
+  MobileNavToggle,
+  NavbarButton,
+} from "@/components/ui/resizable-navbar";
+import React, { useEffect, useRef, useState } from "react";
+import { Heart, Shield, Users, ArrowRight, Star, Eye } from "lucide-react";
+import { motion, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
+import Image from "next/image";
+import poor-img from  "public/poor-img";
 /**
  * HandcraftedLandingWithGradient.tsx
  * Handcrafted landing page with subtle layered gradient background and floating elements.
@@ -222,8 +222,17 @@ function Reveal({
 
 /* ---------------- main ---------------- */
 export default function HandcraftedLandingWithGradient() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
+  // Navigation items for the navbar
+  const navItems = [
+    { name: "Features", link: "#features" },
+    { name: "Causes", link: "#causes" },
+    { name: "Stories", link: "#stories" },
+    { name: "Help", link: "#help" },
+  ];
+
+  // Mobile nav state
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
   const bgRef = useRef<HTMLDivElement | null>(null);
 
   // carousel refs for width measuring
@@ -236,15 +245,6 @@ export default function HandcraftedLandingWithGradient() {
   // speed control
   const baseSpeed = 60; // pixels per second
   const duration = trackWidth ? trackWidth / 2 / baseSpeed : 30;
-
-  // rotate testimonial index for small card highlight (keeps earlier behavior)
-  useEffect(() => {
-    const id = setInterval(
-      () => setTestimonialIndex((i) => (i + 1) % TESTIMONIALS.length),
-      5000
-    );
-    return () => clearInterval(id);
-  }, []);
 
   // subtle background parallax with mouse
   useEffect(() => {
@@ -313,95 +313,143 @@ export default function HandcraftedLandingWithGradient() {
       </div>
 
       {/* page */}
-      <header className="relative z-20">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <Navbar className="fixed top-0 ">
+        <NavBody>
+          {/* Logo */}
+          <div className="flex items-center gap-3 backdrop-blur-lg">
             <div className="w-10 h-10 rounded-lg border border-slate-200 grid place-items-center font-semibold text-indigo-700 bg-white/80 shadow-sm">
               GW
             </div>
             <div>
-              <div className="font-semibold">GoodWorks</div>
+              <div className="font-semibold">HopeFund</div>
               <div className="text-xs text-slate-500">
                 Trusted donations — locally.
               </div>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-700">
-            <a href="#features" className="hover:text-slate-900">
-              Features
-            </a>
-            <a href="#causes" className="hover:text-slate-900">
-              Causes
-            </a>
-            <a href="#stories" className="hover:text-slate-900">
-              Stories
-            </a>
-            <a href="#help" className="hover:text-slate-900">
-              Help
-            </a>
-            <Button
-              onClick={() => (window.location.href = "/dashboard")}
-              className="ml-2"
-            >
-              Open Dashboard
-            </Button>
-          </nav>
+          {/* Navigation Items */}
+          <NavItems items={navItems} />
 
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
-              {mobileOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
-        </div>
+          {/* CTA Button */}
+          <NavbarButton
+            onClick={() => (window.location.href = "/dashboard")}
+            variant="primary"
+          >
+            Open Dashboard
+          </NavbarButton>
+        </NavBody>
 
-        {/* mobile nav */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden max-w-6xl mx-auto px-4"
-            >
-              <div className="bg-white rounded-lg border p-4 shadow-sm">
-                <a className="block py-2" href="#features">
-                  Features
-                </a>
-                <a className="block py-2" href="#causes">
-                  Causes
-                </a>
-                <a className="block py-2" href="#stories">
-                  Stories
-                </a>
-                <a className="block py-2" href="#help">
-                  Help
-                </a>
-                <div className="pt-3">
-                  <Link href="/boom">
-                    <Button
-                      onClick={() => (window.location.href = "/dashboard")}
-                      className="w-full"
-                    >
-                      Open Dashboard
-                    </Button>
-                  </Link>
+        {/* Mobile Navigation */}
+        <MobileNav>
+          <MobileNavHeader>
+            {/* Mobile Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg border border-slate-200 grid place-items-center font-semibold text-indigo-700 bg-white/80 shadow-sm">
+                GW
+              </div>
+              <div>
+                <div className="font-semibold">GoodWorks</div>
+                <div className="text-xs text-slate-500">
+                  Trusted donations — locally.
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+            </div>
 
-      <main className="relative z-20">
+            {/* Mobile Menu Toggle */}
+            <MobileNavToggle
+              isOpen={isMobileNavOpen}
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+            />
+          </MobileNavHeader>
+
+          {/* Mobile Menu */}
+          <MobileNavMenu
+            isOpen={isMobileNavOpen}
+            onClose={() => setIsMobileNavOpen(false)}
+          >
+            {navItems.map((item, idx) => (
+              <a
+                key={idx}
+                href={item.link}
+                className="block py-2 text-slate-700 hover:text-indigo-600 transition-colors"
+                onClick={() => setIsMobileNavOpen(false)}
+              >
+                {item.name}
+              </a>
+            ))}
+            <div className="pt-4 border-t border-slate-200">
+              <NavbarButton
+                onClick={() => {
+                  window.location.href = "/dashboard";
+                  setIsMobileNavOpen(false);
+                }}
+                variant="primary"
+                className="w-full"
+              >
+                Open Dashboard
+              </NavbarButton>
+            </div>
+          </MobileNavMenu>
+        </MobileNav>
+      </Navbar>
+
+      <main className="relative z-20 m-10">
+        {/* Hero Image Section */}
+        <section className="max-w-6xl mx-auto px-6 py-8">
+          <Reveal>
+            <Image src=" " alt=" " />
+            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-100 to-slate-200 border shadow-sm">
+              {/* Background pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-white/40 to-pink-50/80" />
+
+              {/* Content overlay */}
+              <div className="relative z-10 flex items-center justify-between p-8 md:p-12 min-h-[320px]">
+                <div className="max-w-2xl">
+                  <h2 className="text-2xl md:text-4xl font-bold mb-4 text-slate-800">
+                    Every donation creates hope
+                  </h2>
+                  <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+                    Thousands of children and families in our communities wait
+                    for basic necessities. Your contribution—whether clothes,
+                    food, or funds—directly impacts lives and builds stronger
+                    communities.
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    <Button
+                      onClick={() => (window.location.href = "/dashboard")}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3"
+                    >
+                      Start Donating Today
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-slate-300 text-slate-700 hover:bg-slate-50 px-6 py-3"
+                      onClick={() =>
+                        window.scrollTo({ top: 800, behavior: "smooth" })
+                      }
+                    >
+                      See Our Impact
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Decorative elements */}
+                <div className="hidden lg:flex items-center justify-center relative">
+                  <div className="w-48 h-48 rounded-full bg-gradient-to-br from-indigo-100 to-pink-100 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full bg-white/80 flex items-center justify-center shadow-lg">
+                      <Heart className="w-16 h-16 text-indigo-600" />
+                    </div>
+                  </div>
+                  <div className="absolute -top-4 -right-4 w-8 h-8 bg-pink-200 rounded-full animate-pulse" />
+                  <div className="absolute -bottom-6 -left-6 w-6 h-6 bg-indigo-200 rounded-full animate-pulse delay-500" />
+                  <div className="absolute top-8 -left-8 w-4 h-4 bg-yellow-200 rounded-full animate-pulse delay-1000" />
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
         {/* hero */}
         <section className="max-w-6xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-10 items-center">
           <div>
@@ -557,7 +605,7 @@ export default function HandcraftedLandingWithGradient() {
             <h2 className="text-2xl font-bold mb-4">What you get</h2>
             <p className="text-slate-600 mb-8 max-w-2xl">
               We designed GoodWorks to avoid jargon. These are the practical
-              things you'll actually use.
+              things you&apos;ll actually use.
             </p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -576,6 +624,42 @@ export default function HandcraftedLandingWithGradient() {
                       </div>
                     </div>
                   </CardContent>
+                </Card>
+              ))}
+            </div>
+          </Reveal>
+        </section>
+
+        {/* causes */}
+        <section id="causes" className="max-w-6xl mx-auto px-6 py-14">
+          <Reveal>
+            <h2 className="text-2xl font-bold mb-4">Top causes nearby</h2>
+            <p className="text-slate-600 mb-8 max-w-2xl">
+              Support meaningful causes in your community. Join thousands of
+              donors making a real difference.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {CAUSES.map((c) => (
+                <Card key={c.name} className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold text-lg">{c.name}</h3>
+                      <p className="text-sm text-slate-500">
+                        Supported by {c.donors} donors
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-indigo-600">
+                        {c.raised}%
+                      </div>
+                      <div className="text-xs text-slate-500">completed</div>
+                    </div>
+                  </div>
+                  <Progress value={c.raised} className="h-3 mb-4" />
+                  <Button variant="outline" className="w-full">
+                    Support This Cause
+                  </Button>
                 </Card>
               ))}
             </div>
