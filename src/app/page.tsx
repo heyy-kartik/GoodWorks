@@ -10,8 +10,6 @@ import {
   Eye,
   Sun,
   Moon,
-  Menu,
-  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -19,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Image from "next/image";
 import {
   Navbar,
   NavBody,
@@ -29,7 +28,6 @@ import {
   MobileNavToggle,
   NavbarButton,
 } from "@/components/ui/resizable-navbar";
-import "./poor-img.jpg";
 /**
  * HandcraftedLandingWithGradient.tsx
  
@@ -40,7 +38,7 @@ import "./poor-img.jpg";
  * Drop this in place of your current landing component.
  *
  * Notes:
- * - Put the hero image at `/public/booom.jpg`.
+ * - Put the hero image at `/public/poor-img.jpg`.
  * - Ensure `ThemeProvider` (next-themes) is configured in your app root.
  */
 
@@ -391,13 +389,16 @@ export default function HandcraftedLandingWithGradient() {
       </Navbar>
 
       <main className="relative z-20 mt-28">
-        {/* Hero with uploaded image (put booom.jpg in /public) */}
+        {/* Hero with uploaded image (poor-img.jpg in /public) */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="relative rounded-2xl overflow-hidden border shadow-sm">
-            <img
+            <Image
               src="/poor-img.jpg"
-              alt="Child receiving a donation"
+              alt="Child receiving a donation - showing the impact of community donations"
+              width={1200}
+              height={360}
               className="w-full h-[360px] object-cover object-center brightness-[0.65] dark:brightness-[0.5]"
+              priority
             />
             <div className="absolute inset-0 flex items-center">
               <div className="max-w-4xl mx-auto px-6 text-white">
