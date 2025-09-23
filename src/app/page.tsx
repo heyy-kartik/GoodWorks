@@ -244,7 +244,7 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
               </SignedOut>
 
               <SignedIn>
-                <NavbarButton onClick={() => (window.location.href = "/dashboard")} variant="primary" className="px-4 py-2">
+                <NavbarButton onClick={() => (window.location.href = "/user")} variant="primary" className="px-4 py-2">
                   Open Dashboard
                 </NavbarButton>
 
