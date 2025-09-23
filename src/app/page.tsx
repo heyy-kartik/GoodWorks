@@ -1,7 +1,7 @@
 "use client";
-import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs"
-
+import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import React, { JSX, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Heart,
   Shield,
@@ -29,16 +29,7 @@ import {
   NavbarButton,
 } from "@/components/ui/resizable-navbar";
 import Image from "next/image";
-
-/**
- * Polished HandcraftedLandingWithGradient.tsx
- *
- * Drop this in place of your current landing component.
- *
- * Notes:
- * - Put the hero image at `/public/booom.jpg`.
- * - Ensure `ThemeProvider` (next-themes) is configured in your app root.
- */
+import Link from "next/link";
 
 /* ---------------- data ---------------- */
 const IMPACT_STATS = {
@@ -149,6 +140,13 @@ function ThemeToggle() {
 
 /* ---------------- main ---------------- */
 export default function HandcraftedLandingWithGradient(): JSX.Element {
+  const router = useRouter();
+
+  // central handler for Sign in -> pushes to /sign-in
+  const goSignIn = () => {
+    router.push("/sign-in");
+  };
+
   const navItems = [
     { name: "Features", link: "#features" },
     { name: "Causes", link: "#causes" },
@@ -198,8 +196,9 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
       window.removeEventListener("resize", measure);
     };
   }, [doubled.length]);
+
   return (
-   <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white text-slate-900">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white text-slate-900">
       {/* theme toggle in top-right */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
@@ -236,12 +235,13 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
           <div className="flex items-center gap-3">
             {/* Desktop actions */}
             <div className="hidden md:flex items-center gap-3">
-              {/* If user is signed out show Sign in, signed in show UserButton + Sign Out option in the user menu */}
+              {/* Show Sign in only for SignedOut users */}
               <SignedOut>
-              <SignInButton afterSignInUrl="/dashboard">
-                <Button className="px-4 py-2">Sign in</Button>
-              </SignInButton>
-            </SignedOut>
+                {/* Next Link wrapping the Button (no legacyBehavior) */}
+                <Link href="/sign-in" className="inline-block">
+                  <Button className="px-4 py-2">Sign in</Button>
+                </Link>
+              </SignedOut>
 
               <SignedIn>
                 <NavbarButton onClick={() => (window.location.href = "/dashboard")} variant="primary" className="px-4 py-2">
@@ -296,12 +296,18 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
             </div>
 
             <div className="pt-4 border-t border-slate-200 mt-3 space-y-3">
-              {/* SignedOut: show sign in CTA, SignedIn: show dashboard + avatar */}
+              {/* Show mobile Sign in only when SignedOut */}
               <SignedOut>
                 <div className="flex gap-2">
-                  <SignInButton mode="modal">
-                    <Button className="w-full">Sign in</Button>
-                  </SignInButton>
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      setIsMobileNavOpen(false);
+                      goSignIn();
+                    }}
+                  >
+                    Sign in
+                  </Button>
                 </div>
               </SignedOut>
 
@@ -331,14 +337,15 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
         </MobileNav>
       </Navbar>
 
+      {/* rest of page (hero, features, causes, testimonials, help, footer) */}
       <main className="relative z-20 mt-28">
-        {/* Hero with uploaded image (put booom.jpg in /public) */}
+        {/* Hero */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="relative rounded-2xl overflow-hidden border shadow-sm">
             <Image
               src="/poor-img.jpg"
               alt="Child receiving a donation"
-              width={1920}   // apna size daalo
+              width={1920}
               height={360}
               className="w-full h-[360px] object-cover object-center brightness-[0.65] dark:brightness-[0.5]"
             />
@@ -480,7 +487,7 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
           </div>
         </section>
 
-        {/* testimonials - looping carousel, pause on hover */}
+        {/* testimonials */}
         <section id="stories" className="max-w-6xl mx-auto px-6 py-14">
           <div className="mb-6"><h2 className="text-2xl font-bold">Voices from our community</h2></div>
 

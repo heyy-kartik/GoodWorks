@@ -1,38 +1,52 @@
 // src/middleware.ts
-import { authMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-/**
- * Protect nearly all routes; allow specific public routes (landing, sign-in, sign-up, webhooks).
- *
- * authMiddleware will redirect unauthenticated users to Clerk's sign-in flow by default.
- * We still expose a matcher below so middleware doesn't run for static assets/_next internals.
- */
+const PUBLIC_PATHS = [
+  "/sign-in",
+  "/sign-up",
+  "/_next",      // next internals
+  "/static",     // if you serve static files here
+  "/favicon.ico",
+  "/robots.txt",
+];
 
-export default authMiddleware({
-  // list any routes you want available to unauthenticated users
-  publicRoutes: [
-    "/",               // landing page
-    "/sign-in*",       // clerk sign-in pages
-    "/sign-up*",       // clerk sign-up pages
-    "/api/webhooks*",  // example public API (webhooks)
-    "/_health",        // optional healthcheck
-  ],
+function isPublic(pathname: string) {
+  // allow exact public paths and any path that starts with a public prefix
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p));
+}
+
+export default clerkMiddleware(async (auth, request) => {
+  const { pathname } = request.nextUrl;
+
+  // if it's public, let it through
+  if (isPublic(pathname)) {
+    return NextResponse.next();
+  }
+
+  // OPTIONAL: only protect certain routes (if you prefer whitelist)
+  // const protectedList = ["/", "/user", "/dashboard"];
+  // if (!protectedList.includes(pathname) && !protectedList.some(p => pathname.startsWith(p + "/"))) {
+  //   return NextResponse.next();
+  // }
+
+  // For other routes, check session
+  const session = await auth();
+  if (!session?.userId) {
+    // redirect to sign-in and include a redirectUrl query so you can return after sign-in
+    const signInUrl = new URL("/sign-in", request.url);
+    // include the attempted path so you can redirect back after sign-in
+    signInUrl.searchParams.set("redirect_url", pathname);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  return NextResponse.next();
 });
 
-/**
- * Important: matcher must exclude _next static files and typical asset extensions,
- * otherwise middleware runs for assets and breaks the site.
- *
- * The regex below will match all app routes except:
- *  - /_next/* and /_next/static/*
- *  - public static assets with common extensions (png/jpg/svg/css/js/woff2 etc.)
- *
- * Adjust patterns if you host other public endpoints (like /public/*).
- */
 export const config = {
+  // run middleware for all app routes (you already had a wide matcher - keep similar)
   matcher: [
-    // run for everything except Next internals and common static asset types
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:png|jpg|jpeg|webp|svg|gif|css|js|map|woff2?|ttf)).*)',
+    '/((?!_next|[^?]*\\.(?:jpg|jpeg|png|gif|webp|avif|svg|ico|css|js|map|json|woff2?|ttf)).*)',
+    '/(api|trpc)(.*)',
   ],
 };
