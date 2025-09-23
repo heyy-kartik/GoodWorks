@@ -1,5 +1,7 @@
 "use client";
-import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+
+
+import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import React, { JSX, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -232,41 +234,23 @@ export default function HandcraftedLandingWithGradient(): JSX.Element {
           </div>
 
           {/* Right: actions */}
-          <div className="flex items-center gap-3">
-            {/* Desktop actions */}
-            <div className="hidden md:flex items-center gap-3">
-              {/* Show Sign in only for SignedOut users */}
+        <div className="flex items-center gap-3">
+            {/* Clerk auth controls */}
+            <div className="flex items-center gap-3">
               <SignedOut>
-                {/* Next Link wrapping the Button (no legacyBehavior) */}
-                <Link href="/sign-in" className="inline-block">
-                  <Button className="px-4 py-2">Sign in</Button>
-                </Link>
+                <SignInButton mode="modal">
+                  <Button className="flex-1">Sign in</Button>
+                </SignInButton>
               </SignedOut>
 
               <SignedIn>
-                <NavbarButton onClick={() => (window.location.href = "/user")} variant="primary" className="px-4 py-2">
-                  Open Dashboard
-                </NavbarButton>
-
-                <div className="ml-1">
-                  <ClerkLoaded>
-                    <UserButton afterSignOutUrl="/" />
-                  </ClerkLoaded>
-                  <ClerkLoading>
-                    <div className="w-9 h-9 rounded-full bg-slate-100" />
-                  </ClerkLoading>
-                </div>
+                <ClerkLoaded>
+                  <UserButton afterSignOutUrl="/" />   {/* ✅ redirect to "/" after sign out */}
+                </ClerkLoaded>
+                <ClerkLoading>
+                  <div className="w-9 h-9 rounded-full bg-slate-100" />
+                </ClerkLoading>
               </SignedIn>
-            </div>
-
-            {/* Mobile menu toggle (visible on mobile) */}
-            <div className="md:hidden">
-              <MobileNavToggle
-                isOpen={isMobileNavOpen}
-                onClick={() => setIsMobileNavOpen((s) => !s)}
-                aria-label={isMobileNavOpen ? "Close menu" : "Open menu"}
-                aria-expanded={isMobileNavOpen}
-              />
             </div>
           </div>
         </NavBody>

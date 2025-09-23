@@ -299,7 +299,7 @@ export default function DonorLandingPretty() {
 
           <div className="flex items-center gap-3">
             {/* Clerk auth controls */}
-            <div className=" flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <SignedOut>
                 <SignInButton mode="modal">
                   <Button className="flex-1">Sign in</Button>
@@ -308,7 +308,7 @@ export default function DonorLandingPretty() {
 
               <SignedIn>
                 <ClerkLoaded>
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton afterSignOutUrl="/" />   {/* ✅ redirect to "/" after sign out */}
                 </ClerkLoaded>
                 <ClerkLoading>
                   <div className="w-9 h-9 rounded-full bg-slate-100" />
