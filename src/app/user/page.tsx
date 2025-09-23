@@ -100,6 +100,7 @@ function saveDonations(list: MyDonation[]) {
 
 /* ---------------- Component ---------------- */
 
+
 export default function DonorLandingPretty() {
   const [user] = useState(MOCK_DONOR);
   const [donations, setDonations] = useState<MyDonation[]>(() => {
