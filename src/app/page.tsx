@@ -16,8 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import Image from "next/image";
-import poor-img from  "public/poor-img";
+
 /**
  * HandcraftedLandingWithGradient.tsx
  * Handcrafted landing page with subtle layered gradient background and floating elements.
@@ -321,7 +320,7 @@ export default function HandcraftedLandingWithGradient() {
               GW
             </div>
             <div>
-              <div className="font-semibold">HopeFund</div>
+              <div className="font-semibold">GoodWorks </div>
               <div className="text-xs text-slate-500">
                 Trusted donations — locally.
               </div>
@@ -398,7 +397,6 @@ export default function HandcraftedLandingWithGradient() {
         {/* Hero Image Section */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <Reveal>
-            <Image src=" " alt=" " />
             <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-100 to-slate-200 border shadow-sm">
               {/* Background pattern */}
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-white/40 to-pink-50/80" />
