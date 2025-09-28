@@ -1,4 +1,4 @@
-# 🤝 Code2Donate
+# 🤝 GoodWorks
 
 > **Connecting donors with verified NGOs to create meaningful impact in local communities**
 
@@ -9,7 +9,7 @@
 
 ## 📖 About
 
-**Code2Donate** is a modern, web-first donation platform built for people — donors, volunteers, and NGOs. Our platform simplifies the donation process with clear steps: donate, schedule pickup, receive confirmation, and download receipts.
+**GoodWorks** is a modern, web-first donation platform built for people — donors, volunteers, and NGOs. Our platform simplifies the donation process with clear steps: donate, schedule pickup, receive confirmation, and download receipts.
 
 ### 🌟 Mission
 To bridge the gap between generous donors and verified NGOs, creating transparent and impactful giving experiences that strengthen local communities across India.
@@ -61,8 +61,8 @@ To bridge the gap between generous donors and verified NGOs, creating transparen
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/heyy-kartik/Code2Donate.git
-   cd Code2donate
+   git clone https://github.com/heyy-kartik/GoodWorks.git
+   cd GoodWorks
    ```
 
 2. **Install dependencies**
@@ -167,7 +167,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 - **Email**: support@goodworks.example
 - **Hours**: Monday–Saturday, 9am–6pm
-- **Issues**: [GitHub Issues](https://github.com/heyy-kartik/Code2Donate/issues)
+- **Issues**: [GitHub Issues](https://github.com/heyy-kartik/GoodWorks/issues)
 
 ## 🙏 Acknowledgments
 
