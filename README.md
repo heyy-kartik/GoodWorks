@@ -61,8 +61,8 @@ To bridge the gap between generous donors and verified NGOs, creating transparen
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/heyy-kartik/Code2Donate.git
-   cd Code2donate
+   git clone https://github.com/heyy-kartik/GoodWorks.git
+   cd GoodWorks
    ```
 
 2. **Install dependencies**
@@ -85,7 +85,7 @@ To bridge the gap between generous donors and verified NGOs, creating transparen
 ## 📁 Project Structure
 
 ```
-Code2donate/
+GoodWorks/
 ├── 📁 public/                 # Static assets
 ├── 📁 src/
 │   ├── 📁 app/               # Next.js 13+ App Router
