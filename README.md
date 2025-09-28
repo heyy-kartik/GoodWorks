@@ -9,7 +9,7 @@
 
 ## 📖 About
 
-**Code2Donate** is a modern, web-first donation platform built for people — donors, volunteers, and NGOs. Our platform simplifies the donation process with clear steps: donate, schedule pickup, receive confirmation, and download receipts.
+**GoodWorks** is a modern, web-first donation platform built for people — donors, volunteers, and NGOs. Our platform simplifies the donation process with clear steps: donate, schedule pickup, receive confirmation, and download receipts.
 
 ### 🌟 Mission
 To bridge the gap between generous donors and verified NGOs, creating transparent and impactful giving experiences that strengthen local communities across India.
