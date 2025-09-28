@@ -158,11 +158,6 @@ We welcome contributions from developers, designers, and domain experts! Here's 
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-## 👥 Team
-
-- **Lead Developer**: [@heyy-kartik](https://github.com/heyy-kartik)
-- **Original Repository**: [@ivishal-g](https://github.com/ivishal-g)
-
 ## 📞 Support
 
 - **Email**: support@goodworks.example
