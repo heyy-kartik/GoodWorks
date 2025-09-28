@@ -1,4 +1,4 @@
-# 🤝 Code2Donate
+# 🤝 GoodWorks
 
 > **Connecting donors with verified NGOs to create meaningful impact in local communities**
 
