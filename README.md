@@ -85,7 +85,7 @@ To bridge the gap between generous donors and verified NGOs, creating transparen
 ## 📁 Project Structure
 
 ```
-Code2donate/
+GoodWorks/
 ├── 📁 public/                 # Static assets
 ├── 📁 src/
 │   ├── 📁 app/               # Next.js 13+ App Router
@@ -157,11 +157,6 @@ We welcome contributions from developers, designers, and domain experts! Here's 
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Team
-
-- **Lead Developer**: [@heyy-kartik](https://github.com/heyy-kartik)
-- **Original Repository**: [@ivishal-g](https://github.com/ivishal-g)
 
 ## 📞 Support
 
