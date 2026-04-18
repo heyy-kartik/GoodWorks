@@ -173,6 +173,10 @@ const TESTIMONIALS = [
   },
 ];
 
+
+// A random change which we are going to push 
+
+
 const CAUSES = [
   { name: "Emergency Food Relief", raised: 89, donors: 1247 },
   { name: "Education for All", raised: 76, donors: 892 },
